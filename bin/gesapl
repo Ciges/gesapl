@@ -199,11 +199,27 @@ case ${comando} in
                 now="$(date +'%b %e %T')"
                 if [[ -z "${status_message}" ]]; then
                     printf "\t- %s : %s (%s)\n" "${service}" "${status}" "${now}"
-                    log "Monitoring of service ${service}: ${status}"
+                    log "Monitorización del servicio ${service}: ${status}"
+
+                    # Si el servicio está caído mandar un email a los admins
+                    if [[ "${status}" == "KO" ]]; then
+                        now="$(date +'%b %e %T')"
+                        for email in `echo $admin_emails|tr ',' ' '`; do
+                            printf "%s El servicio %s está caído (servidor %s)\n" "${now}" ${service} "$(hostname)"|mail -s "Servicio ${service} KO en el servidor $(hostname)" ${email}
+                        done;
+                    fi;
                 else
                     printf "\t- %s : %s (%s!) (%s)\n" "${service}" "${status}" "${status_message}" "${now}"
                     log "Monitorización del servicio ${service}: ${status} - ${status_message}"
-                fi;
+
+                    # Si el servicio está caído mandar un email a los admins
+                    if [[ "${status}" == "KO" ]]; then
+                        now="$(date +'%b %e %T')"
+                        for email in `echo $admin_emails|tr ',' ' '`; do
+                            printf "%s El servicio %s está caído (servidor %s, mensaje de estado \"%s\")\n" "${now}" ${service} "${status_message}" "$(hostname)"|mail -s "Servicio ${service} KO en el servidor $(hostname)" ${email}
+                        done;
+                    fi;
+                 fi;
             done;
         else
             mensaje="Monitorización no realizada:  Ningún servicio está configurado en gesapl"
