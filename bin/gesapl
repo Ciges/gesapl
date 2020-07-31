@@ -1,13 +1,10 @@
 #!/bin/bash
 
-# TODO
-# - Poner el nombre de las variables en inglés
-
-# Configuration section
+# CONFIGURACIÓN
 CONFIG_FILE="/home/theangryjose/Software/gesapl/etc/gesapl/gesapl.conf"
 GESAPL_VERSION="1.00"
 
-# Functions
+# FUNCIONES
 function help {
     printf "%s\n"  "GesApl v${GESAPL_VERSION} - Aplicación de monitorización de servicios"
 
@@ -15,11 +12,13 @@ function help {
 
 Siendo orden una de las siguientes: --registrar_servicio (o -rs), --borrar_servicio (o -bs), --ayuda (o -a)
 
-    -rs | --registrar_servicio nombre script_de_arranque ruta_fichero_pid proceso :  Registra un servicio e inicia su monitorización
+    -ms | --monitorizar_servicios :  Monitoriza los servicios configurados
+
+    -rs | --registrar_servicio nombre script_de_arranque ruta_pid_file service_executable :  Registra un servicio e inicia su monitorización
 
         El nombre de servicio es arbitrario, es el nombre con el que gesapl lo va a tratar
         El script de arranque es el nombre del script de arranque/parada en /etc/init.d
-        El proceso es el nombre del proceso con el que se le ve en el sistema
+        El service_executable es el nombre del service_executable con el que se le ve en el sistema
 
     -bs | --borrar_servicio nombre :  Borra el servicio indicado
 
@@ -39,9 +38,74 @@ Dejar de monitorizar MySQL
 "
 }
 
+# Graba el mensaje pasado como parámetro en en log, precedido de la fecha y hora
+function log {
+    now="$(date +'%b %e %T')"
+    printf "%s %s\n" "${now}" "$1" >> ${log_file}
+}
+
+# Monitoriza el servicio indicado
+# Devuelve un valor de retorno 0 si está presente, 1 en caso contrario
+# Por la salida estandar devuelve un mensaje de error si lo hubiera
+function monitor {
+    local service
+    local service_info
+    local service_pid
+    local service_script
+    local pid_file
+    local service_executable
+    local status
+    local status_message
+
+    service="${1}"
+    if ! [ -f "${services_data}/${service}" ]; then
+        printf "ERROR: %s\n\n" "El servicio ${nombre} no está siendo monitorizado por gesappl"
+        exit 1
+    fi;
+
+    # Status KO por defecto
+    status=1
+    status_message=""
+
+    service_info="$(cat ${services_data}/${service})"
+    service_script="$(echo ${service_info}|cut -f1 -d',')"
+    pid_file="$(echo ${service_info}|cut -f2 -d',')"
+    service_executable="$(echo ${service_info}|cut -f3 -d',')"
+
+    # Verificamos el pid indicado en el fichero PID y si corresponde a proceso en ejecución del servicio
+    if [[ -r "${pid_file}" ]]; then
+        local service_pid=`cat ${pid_file}`
+    
+        # Corresponde el PID a un proceso del sistema?
+        if ps -hq ${service_pid} > /dev/null; then
+            # El PID corresponde al ejecutable del servicio?
+            if [[ "$(ps -hq ${service_pid} -o cmd|awk '{ print $1 }')" == "${service_executable}" ]]; then
+                status=0    # OK
+            else
+                status_message="El proceso con PID ${service_pid} existe pero no corresponde al servicio ${service_executable}"
+            fi;
+        else
+            status_message="No hay ningún proceso en el sistema con PID ${service_pid}"
+        fi;
+    else    
+        if ps -e -o cmd|awk '{ print $1 }'|grep -q ${service_executable}; then
+            status_message="El servicio está arrancado pero el fichero PID ${pid_file} no existe o no se puede leer"
+        fi;
+    fi;
+
+    # Si el fichero PID no existe, o no es coherente buscamos procesos en ejecución del servicio
+    if [[ ${status} -ne 0 ]]; then
+        ps -e -o cmd|awk '{ print $1 }'|grep -q ${service_executable}
+        status=$?
+    fi;
+
+    [[ -n "${status_message}" ]] && printf "%s\n" "${status_message}"
+
+    return ${status}
+}
 
 
-# Main
+# INICIO
 if ! [ -r ${CONFIG_FILE} ];  then
     printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
     help
@@ -50,10 +114,10 @@ fi;
 
 source ${CONFIG_FILE}
 
-# Default values
+# Valores por defecto
 comando=""
 
-# Parse arguments
+# Parseamos los argumentos
 if [[ $# -eq 0 ]]; then
     printf "ERROR %s\n\n" "Número de parámetros incorrecto"
     help
@@ -61,19 +125,29 @@ if [[ $# -eq 0 ]]; then
 fi;
 
 case $1 in
-    -rs|--registrar_servicio)
+    -ms|--monitorizar_servicio)
+        comando="ms"
+        shift        
+
+        if [ $# -ne 0  ]; then
+            printf "ERROR %s\n\n" "Número de parámetros incorrecto"
+            help
+            exit 1
+        fi
+        ;;
+     -rs|--registrar_servicio)
         comando="rs"
         shift
         nombre=$1
         shift
-        script_arranque=$1
+        service_script=$1
         shift
-        fichero_pid=$1
+        pid_file=$1
         shift
-        proceso=$1
+        service_executable=$1
         shift
 
-        if [ -z "${nombre}" -o -z "${script_arranque}" -o -z "${fichero_pid}" -o -z "${proceso}" ]; then
+        if [ -z "${nombre}" -o -z "${service_script}" -o -z "${pid_file}" -o -z "${service_executable}" ]; then
             printf "ERROR %s\n\n" "Número de parámetros incorrecto"
             help
             exit 1
@@ -106,6 +180,38 @@ case $1 in
 esac;
 
 case ${comando} in
+    ms)
+        printf "%s\n"  "GesApl v${GESAPL_VERSION} - Aplicación de monitorización de servicios"
+        services_info_files="$(find "${services_data}" -type f|grep -v '_stopped$'|sort)"
+
+        if [[ -n "${services_info_files}" ]]; then
+            printf "\nMonitorización de servicios:\n"
+            for f in ${services_info_files}; do
+                service=${f##*/}
+
+                status_message="$(monitor "${service}")"
+                if [[ $? -eq 0 ]]; then
+                    status="OK"
+                else
+                    status="KO"
+                fi;
+
+                now="$(date +'%b %e %T')"
+                if [[ -z "${status_message}" ]]; then
+                    printf "\t- %s : %s (%s)\n" "${service}" "${status}" "${now}"
+                    log "Monitoring of service ${service}: ${status}"
+                else
+                    printf "\t- %s : %s (%s!) (%s)\n" "${service}" "${status}" "${status_message}" "${now}"
+                    log "Monitorización del servicio ${service}: ${status} - ${status_message}"
+                fi;
+            done;
+        else
+            mensaje="Monitorización no realizada:  Ningún servicio está configurado en gesapl"
+            printf "$mensaje"
+            log "$mensaje"
+        fi;
+        ;;
+
     rs)
         if ! [[ -d "${services_data}" ]]; then
             mkdir -p "${services_data}"
@@ -121,28 +227,32 @@ case ${comando} in
             exit 1
         fi;
 
-        echo "${script_arranque},${fichero_pid},${proceso}" > "${services_data}/${nombre}"
+        echo "${service_script},${pid_file},${service_executable}" > "${services_data}/${nombre}"
         rc=$?
         if [[ ${rc} -ne 0 ]]; then
             printf "ERROR: %s\n\n" "Error al añadir el servicio ${nombre}"
             exit 1
         fi;
 
-        printf "Añadida la monitorización del servicio ${nombre}\n\n"
+        mensaje="Añadida la monitorización del servicio ${nombre} (script de arranque=/etc/init.d/${service_script}, fichero pid=${pid_file}, service_executable=${service_executable})\n"
+        printf "${mensaje}\n\n"
+        log "${mensaje}"
         ;;
     bs)
         if ! [ -f "${services_data}/${nombre}" ]; then
             printf "ERROR: %s\n\n" "El servicio ${nombre} no está siendo monitorizado por gesappl"
             exit 1
         fi;
-        mv "${services_data}/${nombre}" "${services_data}/${nombre}_stopped"
+        mv -f "${services_data}/${nombre}" "${services_data}/${nombre}_stopped"
         rc=$?
         if [[ ${rc} -ne 0 ]]; then
             printf "ERROR: %s\n\n" "Error al eliminar el servicio ${nombre}"
             exit 1
         fi;
 
-        printf "Detenida la monitorización del servicio ${nombre}\n\n"
+        mensaje="Detenida la monitorización del servicio ${nombre}"
+        printf "${mensaje}\n\n"
+        log "${mensaje}"
         ;;
     ls)
         printf "%s\n"  "GesApl v${GESAPL_VERSION} - Aplicación de monitorización de servicios"
@@ -152,10 +262,10 @@ case ${comando} in
             printf "\nServicios monitorizados:\n"
             for f in ${services_info_files}; do
                 service_info="$(cat ${f})"
-                script_arranque="$(echo ${service_info}|cut -f1 -d',')"
-                fichero_pid="$(echo ${service_info}|cut -f2 -d',')"
-                proceso="$(echo ${service_info}|cut -f3 -d',')"
-                printf "\t- %s :  script de arranque=/etc/init.d/%s, fichero pid=%s, proceso=%s\n" ${f##*/} ${script_arranque} ${fichero_pid} ${proceso}
+                service_script="$(echo ${service_info}|cut -f1 -d',')"
+                pid_file="$(echo ${service_info}|cut -f2 -d',')"
+                service_executable="$(echo ${service_info}|cut -f3 -d',')"
+                printf "\t- %s :  script de arranque=/etc/init.d/%s, fichero pid=%s, service_executable=%s\n" ${f##*/} ${service_script} ${pid_file} ${service_executable}
             done;
         else
             printf "Ningún servicio está siendo monitorizado por gesapl"
@@ -163,5 +273,3 @@ case ${comando} in
         ;;
 
 esac
-
-
