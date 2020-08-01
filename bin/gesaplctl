@@ -101,6 +101,7 @@ case ${comando} in
 	"ls")
 		$(echo ${monitor_services}|awk '{ print $1 }') -ls
 		;;
+
 	"as")
 	    printf "%s\n\n"  "GesApl Control v${GESAPLCTL_VERSION} - Control de servicios monitorizados por GesApl"
 
@@ -120,8 +121,6 @@ case ${comando} in
         	printf "ERROR: %s\n\n" "La configuración del servicio ${nombre} no está completa (verificar ${services_data}/${nombre})"
         	exit 1
         else
-        	##DEBUGprintf "Configuración de %s :  script de arranque=%s, fichero pid=%s, service_executable=%s\n" ${nombre} ${service_script} ${pid_file} ${service_executable}
-
             # Tenemos toda la información necesaria
             if ! [[ -s ${service_script} ]]; then
             	printf "ERROR: %s\n\n" "El script de arranque y parada ${service_script} para el servicio ${nombre} no existe o ne se puede leer"
@@ -137,12 +136,37 @@ case ${comando} in
             ${service_script} start
 
             # Verificamos varias veces si el proceso está operativo
-            
+            service_started=-1	# 0=true
+            for s in 1 5 15; do
+            	sleep ${s}
+            	if [[ -e ${pid_file} ]]; then
+           			pid_service=`cat ${pid_file}`
+            		if [[ $(ps -q ${pid_service} -o cmd|awk '{ print $1 }') == ${service_executable} ]]; then
+            			kill -s 0 `cat ${pid_file}`
+            			service_started=$?
+            		fi
+            	fi
 
+            	# Si no hay fichero pid, o el pid del fichero no corresponde con el servicio le preguntamos al script de init.d
+            	${service_script} status > /dev/null
+            	service_started=$?
 
-            # TODO:
-            # - Verificar que está correctamente arrancado
-            # - Dar de alta su monitorización
+            	if [[ ${service_started} -eq 0 ]]; then
+            		break
+            	fi;
+            done;
+
+            if [[ ${service_started} -ne 0 ]]; then
+           		printf "ERROR: %s\n\n" "El servicio ${nombre} no se ha podido arrancar"
+           		exit 1
+           	else
+           		printf "\nServicio %s arrancado correctamente\n" ${nombre}
+           	fi;
+
+            # Le enviamos una señal al demonio para que tenga en cuenta la nueva configuración
+            if ps -hq `cat ${pid_gesapld}` -o cmd|grep -q ${geaspld_bin}; then
+            	kill -s SIGUSR1 `cat ${pid_gesapld}`
+           	fi;
 
         fi;
 		;;

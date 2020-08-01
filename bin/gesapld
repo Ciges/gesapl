@@ -28,6 +28,22 @@ Este script solo inicia o detiene la monitorización. Para gestionar los servici
 "
 }
 
+# Cuando recibimos la señal SIGUSR1 revisamos si hay novedades
+# Si la bandera de detención ya está puesta paramos ya, no esperamos a terminar el ciclo
+function processUserSignal {
+
+    log "Recibida señal SIGUSR1"
+    # Revisar los servicios a monitorizar
+    log "Servicios activos: $(active_services)"
+
+    # ¿Paramos el demonio ya?
+    if [[ -e ${stop_flag} ]]; then
+        log "Orden de parada recibida. Demonio gesapld detenido"
+        exit 0
+    fi
+
+}
+
 
 # INICIO DEL CODIGO
 
@@ -44,7 +60,7 @@ trap "mkdir -p \"${tmp_dir}\" && touch \"${tmp_dir}/${stop_flag}\"" SIGTERM
 
 # Capturamos la señal SIGUSR1 que sera utilizada para notificar al demonio que hemos cambiado la configuración
 # o que deberíamos parar ya
-
+trap processUserSignal SIGUSR1
 
 # PROCESO HIJO
 
@@ -97,10 +113,19 @@ exec 0< /dev/null
 echo $$ > ${pid_gesapld}
 log "Demonio gesapld iniciado"
 
-while ! [[ -e ${stop_flag} ]]; do
+stop_daemon=-1  # 0=true
+while ! [[ ${stop_daemon} -eq 0 ]]; do
     log "Monitorización de servicios en curso ..."
-    ${monitor_services} >/dev/null # Anulamos la salida estandard, el script ya escribe en el log
-    sleep ${monitor_interval}
+    ${monitor_services} >/dev/null 
+    let s=1
+    until [[ ${s} -eq ${monitor_interval} ]]; do
+        # Hacemos sleeps de un segundo para poder capturar señales más rápidamente
+        sleep 1
+        let s=${s}+1
+    done;
+
+    # La parada del demonio la hacemos si procede al final del ciclo
+    [[ -e ${stop_flag} ]] && stop_daemon=0
 done
 
 log "Demonio gesapld detenido"
