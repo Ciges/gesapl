@@ -191,7 +191,7 @@ esac;
 case ${comando} in
     ms)
         printf "%s\n"  "GesApl v${GESAPL_VERSION} - Aplicación de monitorización de servicios"
-        services_info_files="$(find "${services_data}" -type f|grep -v '\.'|sort)"
+        services_info_files="$(services_configs)"
 
         if [[ -n ${services_info_files} ]]; then
             printf "\nMonitorización de servicios:\n"
@@ -297,7 +297,7 @@ case ${comando} in
 
     ls)
         printf "%s\n"  "GesApl v${GESAPL_VERSION} - Aplicación de monitorización de servicios"
-        services_info_files="$(find "${services_data}" -type f|grep -v '\.'|sort)"
+        services_info_files="$(services_configs)"
 
         if [[ -n ${services_info_files} ]]; then
             printf "\nServicios monitorizados: "
