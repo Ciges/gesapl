@@ -38,12 +38,6 @@ Dejar de monitorizar MySQL
 "
 }
 
-# Graba el mensaje pasado como parámetro en en log, precedido de la fecha y hora
-function log {
-    now="$(date +'%b %e %T')"
-    printf "%s %s\n" "${now}" "$1" >> ${log_file}
-}
-
 # Monitoriza el servicio indicado
 # Devuelve un valor de retorno 0 si está presente, 1 en caso contrario
 # Por la salida estandar devuelve un mensaje de error si lo hubiera
@@ -105,7 +99,7 @@ function monitor {
 }
 
 
-# INICIO
+# INICIO DEL CODIGO
 if ! [ -r ${CONFIG_FILE} ];  then
     printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
     help

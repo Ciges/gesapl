@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# Script para crear un demonio que arranque gesapl
+# Basado en la excelente respuesta de Mike S en https://stackoverflow.com/questions/3430330/best-way-to-make-a-shell-script-daemon
+
+
+GESAPLD_VERSION="1.00"
+
+
+CONFIG_FILE="/home/theangryjose/Software/gesapl/etc/gesapl/gesapl.conf"
+if ! [ -r ${CONFIG_FILE} ];  then
+    printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
+    exit 1
+fi;
+source ${CONFIG_FILE}
+
+
+# FUNCIONES
+function help {
+    printf "%s\n"  "gedapld v${GESAPL_VERSION} - Demonio de  monitorización de servicios"
+
+    printf "\nUso: gesapld start | stop
+
+El demonio vuelca toda la información en el log ${log_file}
+
+Este script solo inicia o detiene la monitorización. Para gestionar los servicios use el script $(echo ${monitor_services}|awk '{ print $ 1}')
+
+"
+}
+
+
+# INICIO DEL CODIGO
+
+# Al arrancar el script lanzamos un proceso hijo en una nueva sesión
+
+me_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+me_FILE=$(basename $0)
+
+# Cambiamos el directorio de trabajo hacia un sitio más seguro.
+cd /
+
+# Capturamos la señal TERM para acabar el demonio limpiamente
+trap "touch ${stop_flag}" SIGTERM
+
+# PROCESO HIJO
+
+if [[ "$1" = "child" ]] ; then
+
+    # Establecemos un umask por defecto, independiente de el del sistema
+    umask 0022
+
+    # Llamamos de nuevo al script y salimos
+    $me_DIR/$me_FILE XXrefork_daemonXX "$@"
+    exit 0
+fi
+
+
+# PUNTO DE ENTRADA
+
+# Este código es el que se ejecuta cuando se llama a gesapld
+# Lanza el hijo en una sesión distinta
+if [[ "$1" != "XXrefork_daemonXX" ]] ; then 
+
+    case "$1" in
+        "start")
+            [[ -e "${stop_flag}" ]] && rm "${stop_flag}"
+            setsid $me_DIR/$me_FILE child "$@" &
+            printf "Demonio gesapld iniciado\n"
+            ;;
+        "stop")
+            printf "Deteniendo gesapld ...\n"
+            touch ${stop_flag}
+            ;;
+        *)
+            help
+            ;;
+    esac;
+
+    exit 0
+fi
+
+
+# CODIGO REAL
+
+# Esta es la parte que se ejecuta por el hijo, una vez hecho el fork
+
+log "Demonio gesapld iniciado"
+
+exec >> ${log_file}
+exec 2>>  ${log_file}
+exec 0< /dev/null
+
+while ! [[ -e ${stop_flag} ]]; do
+    log "Monitorización de servicios en curso ..."
+    ${monitor_services} >/dev/null # Anulamos la salida estandard, el script ya escribe en el log
+    sleep ${monitor_interval}
+done
+
+log "Demonio gesapld detenido"
