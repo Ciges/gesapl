@@ -55,7 +55,7 @@ function monitor {
     local status_message
 
     service="${1}"
-    if ! [ -f "${services_data}/${service}" ]; then
+    if ! [[ -f ${services_data}/${service} ]]; then
         printf "ERROR: %s\n\n" "El servicio ${nombre} no está siendo monitorizado por gesappl"
         exit 1
     fi;
@@ -70,13 +70,13 @@ function monitor {
     service_executable="$(echo ${service_info}|cut -f3 -d',')"
 
     # Verificamos el pid indicado en el fichero PID y si corresponde a proceso en ejecución del servicio
-    if [[ -r "${pid_file}" ]]; then
+    if [[ -r ${pid_file} ]]; then
         local service_pid=`cat ${pid_file}`
     
         # Corresponde el PID a un proceso del sistema?
         if ps -hq ${service_pid} > /dev/null; then
             # El PID corresponde al ejecutable del servicio?
-            if [[ "$(ps -hq ${service_pid} -o cmd|awk '{ print $1 }')" == "${service_executable}" ]]; then
+            if [[ $(ps -hq ${service_pid} -o cmd|awk '{ print $1 }') == ${service_executable} ]]; then
                 status=0    # OK
             else
                 status_message="El proceso con PID ${service_pid} existe pero no corresponde al servicio ${service_executable}"
@@ -96,14 +96,14 @@ function monitor {
         status=$?
     fi;
 
-    [[ -n "${status_message}" ]] && printf "%s\n" "${status_message}"
+    [[ -n ${status_message} ]] && printf "%s\n" "${status_message}"
 
     return ${status}
 }
 
 
 # INICIO DEL CODIGO
-if ! [ -r ${CONFIG_FILE} ];  then
+if ! [[ -r ${CONFIG_FILE} ]];  then
     printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
     help
     exit 1
@@ -126,7 +126,7 @@ case $1 in
         comando="ms"
         shift        
 
-        if [ $# -ne 0  ]; then
+        if [[ $# -ne 0  ]]; then
             printf "ERROR %s\n\n" "Número de parámetros incorrecto"
             help
             exit 1
@@ -144,7 +144,7 @@ case $1 in
         service_executable=$1
         shift
 
-        if [ -z "${nombre}" -o -z "${service_script}" -o -z "${pid_file}" -o -z "${service_executable}" ]; then
+        if [[ -z ${nombre} || -z ${service_script} || -z ${pid_file} || -z ${service_executable} ]]; then
             printf "ERROR %s\n\n" "Número de parámetros incorrecto"
             help
             exit 1
@@ -156,7 +156,7 @@ case $1 in
         nombre=$1
         shift
 
-        if [ -z "${nombre}" -o $# -ne 0  ]; then
+        if [[ -z ${nombre} || $# -ne 0  ]]; then
             printf "ERROR %s\n\n" "Número de parámetros incorrecto"
             help
             exit 1
@@ -181,7 +181,7 @@ case ${comando} in
         printf "%s\n"  "GesApl v${GESAPL_VERSION} - Aplicación de monitorización de servicios"
         services_info_files="$(find "${services_data}" -type f|grep -v '_stopped$'|grep -v '\.'|sort)"
 
-        if [[ -n "${services_info_files}" ]]; then
+        if [[ -n ${services_info_files} ]]; then
             printf "\nMonitorización de servicios:\n"
             for f in ${services_info_files}; do
                 service=${f##*/}
@@ -194,14 +194,14 @@ case ${comando} in
                 fi;
 
                 now="$(date +'%b %e %T')"
-                if [[ -z "${status_message}" ]]; then
+                if [[ -z ${status_message} ]]; then
                     printf "\t- %s : %s (%s)\n" "${service}" "${status}" "${now}"
                     log "Monitorización del servicio ${service}: ${status}"
 
                     # Si el servicio está caído mandar un email a los admins
                     # Con este flag controlamos que sólo enviemos un email :-)
                     mail_flag="${tmp_dir}/${service}.mailsent"
-                    if [[ "${status}" == "KO" ]]; then
+                    if [[ ${status} == "KO" ]]; then
                         if ! [[ -e ${mail_flag} ]]; then
                             now="$(date +'%b %e %T')"
                             for email in `echo $admin_emails|tr ',' ' '`; do
@@ -219,7 +219,7 @@ case ${comando} in
                     # Si el servicio está caído mandar un email a los admins
                     # Con este flag controlamos que sólo enviemos un email :-)
                     mail_flag="${tmp_dir}/${service}.mailsent"
-                    if [[ "${status}" == "KO" ]]; then
+                    if [[ ${status} == "KO" ]]; then
                         if ! [[ -e ${mail_flag} ]]; then
                             now="$(date +'%b %e %T')"
                             for email in `echo $admin_emails|tr ',' ' '`; do
@@ -240,7 +240,7 @@ case ${comando} in
         ;;
 
     rs)
-        if ! [[ -d "${services_data}" ]]; then
+        if ! [[ -d ${services_data} ]]; then
             mkdir -p "${services_data}"
             rc=$?
             if [[ ${rc} -ne 0 ]]; then
@@ -249,7 +249,7 @@ case ${comando} in
             fi;
         fi;
 
-        if [ -f "${services_data}/${nombre}" ]; then
+        if [[ -f ${services_data}/${nombre} ]]; then
             printf "ERROR: %s\n\n" "El servicio ${nombre} ya ha sido registrado en gesappl"
             exit 1
         fi;
@@ -266,7 +266,7 @@ case ${comando} in
         log "${mensaje}"
         ;;
     bs)
-        if ! [ -f "${services_data}/${nombre}" ]; then
+        if ! [[ -f ${services_data}/${nombre} ]]; then
             printf "ERROR: %s\n\n" "El servicio ${nombre} no está siendo monitorizado por gesappl"
             exit 1
         fi;
@@ -285,7 +285,7 @@ case ${comando} in
         printf "%s\n"  "GesApl v${GESAPL_VERSION} - Aplicación de monitorización de servicios"
         services_info_files="$(find "${services_data}" -type f|grep -v '_stopped$'|grep -v '\.'|sort)"
 
-        if [[ -n "${services_info_files}" ]]; then
+        if [[ -n ${services_info_files} ]]; then
             printf "\nServicios monitorizados:\n"
             for f in ${services_info_files}; do
                 service_info="$(cat ${f})"
