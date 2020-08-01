@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# Script de monitorización de servicios de GesApl
+# Permite listar y configurar los servicios a monitorizar
+
 # CONFIGURACIÓN
-CONFIG_FILE="/home/theangryjose/Software/gesapl/etc/gesapl/gesapl.conf"
+CONFIG_FILE="/etc/gesapl/gesapl.conf"
 GESAPL_VERSION="1.00"
 
 # FUNCIONES
@@ -10,7 +13,7 @@ function help {
 
     printf "\nUso: gesapl orden parámetros
 
-Siendo orden una de las siguientes: --registrar_servicio (o -rs), --borrar_servicio (o -bs), --ayuda (o -a)
+Siendo orden una de las siguientes: --monitorizar_servicios (o -ms), --registrar_servicio (o -rs), --borrar_servicio (o -bs), -ls | --listar_servicios (o -ls), --ayuda (o -a)
 
     -ms | --monitorizar_servicios :  Monitoriza los servicios configurados
 
