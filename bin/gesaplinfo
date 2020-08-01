@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Script de generación de informes de uso de GesApl
+# Genera un informe con 
+# - Relación de programas monitorizados (sus nombres)
+# - Última hora de cada uno de esos programas. Si funcionan y el momento de su último control.
+# - Relación de los últimos 20 comandos ejecutados en GesApl y de los parámetros que se le envíaron así como de la fecha y hora de su ejecución
+
+# CONFIGURACIÓN
+CONFIG_FILE="/etc/gesapl/gesapl.conf"
+GESAPLINFO_VERSION="1.00"
+
+# FUNCIONES
+function help {
+    printf "%s\n"  "GesApl Informes v${GESAPLINFO_VERSION} - Informe de uso de GesApl"
+
+    printf "\nUso: gesaplinfo [ email ]
+
+    Este script genera un informe de uso de GesApl y si se indica un email lo envía por correo.
+
+    El informe consta de
+    - Una relación de programas monitorizados (sus nombres)
+    - Última hora de cada uno de esos programas. Si funcionan y el momento de su último control
+    - Relación de los últimos 20 comandos ejecutados en GesApl, con sus parámetros, fecha y hora de ejecución y usuario que lo lanzó
+
+
+"
+}
+
+# INICIO DEL CODIGO
+if ! [[ -r ${CONFIG_FILE} ]];  then
+    printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
+    help
+    exit 1
+fi;
+
+source ${CONFIG_FILE}
+
+
+# Registramos el comando
+log_command "gesaplinfo $@"
+
+# Parseamos los argumentos
+if [[ $# -gt 1 ]]; then
+    printf "ERROR %s\n\n" "Número de parámetros incorrecto"
+    help
+    exit 1
+elif [[ $# -eq 1 ]]; then
+    if [[ $1 == "-a" ]]; then
+        help
+        exit 0
+    else
+        email=$1
+       
+    fi;
+    shift
+fi;
+
+printf "%s\n\n"  "GesApl Informes v${GESAPLINFO_VERSION} - Informe de uso de GesApl"
+
