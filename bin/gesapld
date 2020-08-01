@@ -19,7 +19,7 @@ source ${CONFIG_FILE}
 function help {
     printf "%s\n"  "gedapld v${GESAPL_VERSION} - Demonio de  monitorización de servicios"
 
-    printf "\nUso: gesapld start | stop
+    printf "\nUso: gesapld start | stop | status
 
 El demonio vuelca toda la información en el log ${log_file}
 
@@ -44,6 +44,19 @@ function processUserSignal {
 
 }
 
+# Devuelve un valor de retorno 0 si el demonio está arrancado y de 1 si no lo está
+function gesapld_started {
+
+    # Buscamos por el pid del fichero
+    if [[ -r ${pid_gesapld} ]]; then
+        if ps -hq `cat ${pid_gesapld}` -o cmd|grep ${gesapld_bin}|grep -v grep|grep -q 'refork_daemon'; then
+            return 0
+        fi;
+    fi
+
+    # Y si no es posible buscamos procesos en el sistema
+    ps -ef|grep ${gesapld_bin}|grep -v grep|grep -q 'refork_daemon'
+}
 
 # INICIO DEL CODIGO
 
@@ -88,23 +101,54 @@ if [[ "$1" != "XXrefork_daemonXX" ]] ; then
             # Registramos el comando
             log_command "gesapld $@"
 
+            if [[ `id -u` -ne 0 ]]; then
+                printf "ERROR: Este script debe de ser ejecutado con derechos de root\n"
+                exit 1
+            fi;
+
+            if gesapld_started; then
+                printf "ERROR: Ya hay un demonio gesapld en ejecución\n"
+                exit 1
+            fi;
+
             [[ -e "${stop_flag}" ]] && rm "${stop_flag}"
             setsid $me_DIR/$me_FILE child "$@" &
             printf "Demonio gesapld iniciado\n"
             ;;
+
         "stop")
             # Registramos el comando
             log_command "gesapld $@"
 
+            if [[ `id -u` -ne 0 ]]; then
+                printf "ERROR: Este script debe de ser ejecutado con derechos de root\n"
+                exit 1
+            fi;
+
             printf "Deteniendo gesapld ...\n"
             touch ${stop_flag}
             ;;
+
+        "status")
+            # Registramos el comando
+            log_command "gesapld $@"
+
+            if gesapld_started; then
+                printf "El demonio gesapld está arrancado\n"
+                exit 0
+            else
+                printf "El demonio gesapld está detenido\n"
+                exit 1
+            fi
+            ;;
+
         *)
             # Registramos el comando
             log_command "gesapld $@"
 
             help
             ;;
+
     esac;
 
     exit 0
