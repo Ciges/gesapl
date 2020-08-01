@@ -161,8 +161,100 @@ case ${comando} in
            		exit 1
            	else
            		printf "\nServicio %s arrancado correctamente\n" ${nombre}
+           		log "Servicio ${nombre} arrancado manualmente por gesaplctl"
            	fi;
 
+           	# Quitamos la marca de "servicio parado"
+           	rm -f "${services_data}/${nombre}.stop"
+           	if  [[ $? -ne 0 ]]; then
+           		printf "WARNING: %s\n" "No se ha podido reactivar la configuración de ${nombre}"
+           		log "WARNING: No se ha podido reactivar la configuración de ${nombre}\n"
+           	fi;
+            # Le enviamos una señal al demonio para que tenga en cuenta la nueva configuración
+            if [[ -r ${pid_gesapld} ]]; then
+            	if ps -hq `cat ${pid_gesapld}` -o cmd|grep -q ${geaspld_bin}; then
+            		kill -s SIGUSR1 `cat ${pid_gesapld}`
+           		fi;
+           	fi;
+
+        fi;
+		;;
+
+	"ds")
+	    printf "%s\n\n"  "GesApl Control v${GESAPLCTL_VERSION} - Control de servicios monitorizados por GesApl"
+
+        service_info_file="${services_data}/${nombre}"
+        if ! [[ -r ${service_info_file} ]]; then
+        	printf "ERROR: %s\n\n" "El servicio ${nombre} no está configurado (no existe o no se puede leer ${services_data}/${nombre}"
+        	exit 1
+        fi;
+
+        service_info="$(cat ${service_info_file})"
+
+        service_script="/etc/init.d/$(echo ${service_info}|cut -f1 -d',')"
+        pid_file="$(echo ${service_info}|cut -f2 -d',')"
+        service_executable="$(echo ${service_info}|cut -f3 -d',')"
+
+        if [[ -z ${service_info} || -z ${service_script} || -z ${pid_file} || -z ${service_executable} ]]; then
+        	printf "ERROR: %s\n\n" "La configuración del servicio ${nombre} no está completa (verificar ${services_data}/${nombre})"
+        	exit 1
+        else
+            # Tenemos toda la información necesaria
+            if ! [[ -s ${service_script} ]]; then
+            	printf "ERROR: %s\n\n" "El script de arranque y parada ${service_script} para el servicio ${nombre} no existe o ne se puede leer"
+            	exit 1
+            fi;
+            ${service_script} status > /dev/null
+            if [[ $? -ne 0 ]]; then
+            	printf "ERROR: %s\n\n" "El servicio ${nombre} no está arrancado"
+            	exit 1
+            fi;
+
+        	if [[ -e ${pid_file} ]]; then
+       			pid_service=`cat ${pid_file}`
+       		fi;
+
+
+            # Verificamos varias veces si el proceso está operativo
+            service_started=0	# 0=true
+            # Todo está OK, paramos
+            ${service_script} stop
+            sleep 1
+
+         	if [[ $(ps -q ${pid_service} -o cmd|awk '{ print $1 }') == ${service_executable} ]]; then
+	            sleep 5
+        		kill -s SIGTERM `cat ${pid_file}`
+        	elif ${service_script} status > /dev/null; then
+        		sleep 5
+        		${service_script} stop
+        	else
+        		service_started=-1	# Service is stopped
+        	fi
+        	
+        	if [[ ${service_started} -eq 0 ]]; then
+        		if [[ $(ps -q ${pid_service} -o cmd|awk '{ print $1 }') == ${service_executable} ]]; then
+        			kill -s SIGKILL `cat ${pid_file}`
+        		elif ${service_script} status > /dev/null; then
+        			${service_script} stop
+        		else
+        			service_started=-1	# Service is stopped	
+        		fi
+        	fi;
+ 
+            if [[ ${service_started} -eq 0 ]]; then
+           		printf "ERROR: %s\n\n" "El servicio ${nombre} no se ha podido parar"
+           		exit 1
+           	else
+           		printf "\nServicio %s detenido correctamente\n" ${nombre}
+           		log "Servicio ${nombre} detenido manualmente por gesaplctl"
+           	fi;
+
+           	# "Marcamos" el servicio como no activo
+           	touch "${services_data}/${nombre}.stop"
+           	if  [[ $? -ne 0 ]]; then
+           		printf "WARNING: %s\n" "No se ha podido desactivar la configuración de ${nombre}"
+           		log "WARNING: No se ha podido desactivar la configuración de ${nombre}\n"
+           	fi;
             # Le enviamos una señal al demonio para que tenga en cuenta la nueva configuración
             if [[ -r ${pid_gesapld} ]]; then
             	if ps -hq `cat ${pid_gesapld}` -o cmd|grep -q ${geaspld_bin}; then
