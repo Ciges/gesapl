@@ -198,6 +198,7 @@ case $1 in
         log_command "gesapl $@"
 
         help
+        exit 0
         ;;
     *)
         # Registramos el comando

@@ -123,6 +123,7 @@ case $1 in
         log_command "gesaplctl $@"
 
         help
+        exit 0
         ;;
     *)
         # Registramos el comando
