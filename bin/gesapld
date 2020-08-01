@@ -7,7 +7,7 @@
 GESAPLD_VERSION="1.00"
 
 
-CONFIG_FILE="/home/theangryjose/Software/gesapl/etc/gesapl/gesapl.conf"
+CONFIG_FILE="/etc/gesapl/gesapl.conf"
 if ! [ -r ${CONFIG_FILE} ];  then
     printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
     exit 1
