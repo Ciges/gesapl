@@ -116,6 +116,9 @@ comando=""
 
 # Parseamos los argumentos
 if [[ $# -eq 0 ]]; then
+    # Registramos el comando
+    log_command "gesapl"
+
     printf "ERROR %s\n\n" "Número de parámetros incorrecto"
     help
     exit 1
@@ -123,6 +126,9 @@ fi;
 
 case $1 in
     -ms|--monitorizar_servicio)
+        # Registramos el comando
+        log_command "gesapl $@"
+
         comando="ms"
         shift        
 
@@ -133,6 +139,9 @@ case $1 in
         fi
         ;;
      -rs|--registrar_servicio)
+        # Registramos el comando
+        log_command "gesapl $@"
+
         comando="rs"
         shift
         nombre=$1
@@ -163,6 +172,9 @@ case $1 in
         fi
         ;;
     -bs|--borrar_servicio)
+        # Registramos el comando
+        log_command "gesapl $@"
+
         comando="bs"
         shift
         nombre=$1
@@ -175,18 +187,28 @@ case $1 in
         fi
         ;;
     -ls|--listar_servicios)
+        # Registramos el comando
+        log_command "gesapl $@"
+
         comando="ls"
         shift
         ;;
     -a|--ayuda)
+        # Registramos el comando
+        log_command "gesapl $@"
+
         help
         ;;
     *)
+        # Registramos el comando
+        log_command "gesapl $@ (Orden no reconocida)"
+
         printf "ERROR %s\n\n" "Orden no reconocida"
         help
         exit 1
         ;;
 esac;
+
 
 case ${comando} in
     ms)

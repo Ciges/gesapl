@@ -85,15 +85,24 @@ if [[ "$1" != "XXrefork_daemonXX" ]] ; then
 
     case "$1" in
         "start")
+            # Registramos el comando
+            log_command "gesapld $@"
+
             [[ -e "${stop_flag}" ]] && rm "${stop_flag}"
             setsid $me_DIR/$me_FILE child "$@" &
             printf "Demonio gesapld iniciado\n"
             ;;
         "stop")
+            # Registramos el comando
+            log_command "gesapld $@"
+
             printf "Deteniendo gesapld ...\n"
             touch ${stop_flag}
             ;;
         *)
+            # Registramos el comando
+            log_command "gesapld $@"
+
             help
             ;;
     esac;

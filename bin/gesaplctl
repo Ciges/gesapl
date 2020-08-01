@@ -19,7 +19,7 @@ Siendo orden una de las siguientes: --arrancar_servicio (o -as), --detener_servi
 
     -ds | --detener_servicio nombre :  detieene el servicio configurado con ese nombre
 
-    -rs | --arrancar_servicio nombre :  reinicia el servicio configurado con ese nombre
+    -rs | --reiniciar_servicio nombre :  reinicia el servicio configurado con ese nombre
 
     -ls | --listar_servicios :  Lista los servicios configurados y los parámetros registrados para cada uno
 
@@ -42,6 +42,9 @@ source ${CONFIG_FILE}
 
 # Parseamos los argumentos
 if [[ $# -eq 0 ]]; then
+    # Registramos el comando
+    log_command "gesaplctl $@"
+
     printf "ERROR %s\n\n" "Número de parámetros incorrecto"
     help
     exit 1
@@ -49,6 +52,9 @@ fi;
 
 case $1 in
     -as|--arrancar_servicio)
+        # Registramos el comando
+        log_command "gesaplctl $@"
+
         comando="as"
         shift
         nombre=$1
@@ -61,6 +67,9 @@ case $1 in
         fi
         ;;
     -ds|--detener_servicio)
+        # Registramos el comando
+        log_command "gesaplctl $@"
+
         comando="ds"
         shift
         nombre=$1
@@ -73,6 +82,9 @@ case $1 in
         fi
         ;;
     -rs|--reiniciar_servicio)
+        # Registramos el comando
+        log_command "gesaplctl $@"
+
         comando="as"
         nombre=$1
         shift
@@ -84,13 +96,22 @@ case $1 in
         fi
         ;;
     -ls|--listar_servicios)
+        # Registramos el comando
+        log_command "gesaplctl $@"
+
         comando="ls"
         shift
         ;;
     -a|--ayuda)
+        # Registramos el comando
+        log_command "gesaplctl $@"
+
         help
         ;;
     *)
+        # Registramos el comando
+        log_command "gesaplctl $@ (Orden no reconocida)"
+
         printf "ERROR %s\n\n" "Orden no reconocida"
         help
         exit 1
