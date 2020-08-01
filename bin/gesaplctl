@@ -55,6 +55,11 @@ case $1 in
         # Registramos el comando
         log_command "gesaplctl $@"
 
+        if [[ `id -u` -ne 0 ]]; then
+            printf "ERROR: Este script debe de ser ejecutado con derechos de root\n"
+            exit 1
+        fi;
+
         comando="as"
         shift
         nombre=$1
@@ -70,6 +75,11 @@ case $1 in
         # Registramos el comando
         log_command "gesaplctl $@"
 
+        if [[ `id -u` -ne 0 ]]; then
+            printf "ERROR: Este script debe de ser ejecutado con derechos de root\n"
+            exit 1
+        fi;
+
         comando="ds"
         shift
         nombre=$1
@@ -84,6 +94,11 @@ case $1 in
     -rs|--reiniciar_servicio)
         # Registramos el comando
         log_command "gesaplctl $@"
+
+        if [[ `id -u` -ne 0 ]]; then
+            printf "ERROR: Este script debe de ser ejecutado con derechos de root\n"
+            exit 1
+        fi;
 
         comando="as"
         nombre=$1
