@@ -100,7 +100,8 @@ case $1 in
             exit 1
         fi;
 
-        comando="as"
+        comando="rs"
+        shift
         nombre=$1
         shift
 
