@@ -137,12 +137,24 @@ case $1 in
         shift
         nombre=$1
         shift
-        service_script=$1
-        shift
-        pid_file=$1
-        shift
-        service_executable=$1
-        shift
+
+        # Al borrar un servicio no borramos su configuración, la renombramos
+        # De esta forma podemos volver a registrarlo indicando sólo su nombre
+        if [[ $# -eq 0 ]]; then
+            if [[ -r ${services_data}/${nombre}.deleted ]]; then
+                service_info="$(cat ${services_data}/${nombre}.deleted)"
+                service_script="$(echo ${service_info}|cut -f1 -d',')"
+                pid_file="$(echo ${service_info}|cut -f2 -d',')"
+                service_executable="$(echo ${service_info}|cut -f3 -d',')"
+            fi;
+        else
+            service_script=$1
+            shift
+            pid_file=$1
+            shift
+            service_executable=$1
+            shift
+        fi;
 
         if [[ -z ${nombre} || -z ${service_script} || -z ${pid_file} || -z ${service_executable} ]]; then
             printf "ERROR %s\n\n" "Número de parámetros incorrecto"
@@ -179,7 +191,7 @@ esac;
 case ${comando} in
     ms)
         printf "%s\n"  "GesApl v${GESAPL_VERSION} - Aplicación de monitorización de servicios"
-        services_info_files="$(find "${services_data}" -type f|grep -v '_stopped$'|grep -v '\.'|sort)"
+        services_info_files="$(find "${services_data}" -type f|grep -v '\.'|sort)"
 
         if [[ -n ${services_info_files} ]]; then
             printf "\nMonitorización de servicios:\n"
@@ -261,7 +273,7 @@ case ${comando} in
             exit 1
         fi;
 
-        mensaje="Añadida la monitorización del servicio ${nombre} (script de arranque=/etc/init.d/${service_script}, fichero pid=${pid_file}, service_executable=${service_executable})\n"
+        mensaje="Añadida la monitorización del servicio ${nombre} (script de arranque=/etc/init.d/${service_script}, fichero pid=${pid_file}, service_executable=${service_executable})"
         printf "${mensaje}\n\n"
         log "${mensaje}"
         ;;
@@ -270,7 +282,7 @@ case ${comando} in
             printf "ERROR: %s\n\n" "El servicio ${nombre} no está siendo monitorizado por gesappl"
             exit 1
         fi;
-        mv -f "${services_data}/${nombre}" "${services_data}/${nombre}_stopped"
+        mv -f "${services_data}/${nombre}" "${services_data}/${nombre}.deleted"
         rc=$?
         if [[ ${rc} -ne 0 ]]; then
             printf "ERROR: %s\n\n" "Error al eliminar el servicio ${nombre}"
@@ -283,7 +295,7 @@ case ${comando} in
         ;;
     ls)
         printf "%s\n"  "GesApl v${GESAPL_VERSION} - Aplicación de monitorización de servicios"
-        services_info_files="$(find "${services_data}" -type f|grep -v '_stopped$'|grep -v '\.'|sort)"
+        services_info_files="$(find "${services_data}" -type f|grep -v '\.'|sort)"
 
         if [[ -n ${services_info_files} ]]; then
             printf "\nServicios monitorizados:\n"
