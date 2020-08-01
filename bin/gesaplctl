@@ -264,6 +264,85 @@ case ${comando} in
 
         fi;
 		;;
+
+	"rs")
+	    printf "%s\n\n"  "GesApl Control v${GESAPLCTL_VERSION} - Control de servicios monitorizados por GesApl"
+
+        service_info_file="${services_data}/${nombre}"
+        if ! [[ -r ${service_info_file} ]]; then
+        	printf "ERROR: %s\n\n" "El servicio ${nombre} no está configurado (no existe o no se puede leer ${services_data}/${nombre}"
+        	exit 1
+        fi;
+
+        service_info="$(cat ${service_info_file})"
+
+        service_script="/etc/init.d/$(echo ${service_info}|cut -f1 -d',')"
+        pid_file="$(echo ${service_info}|cut -f2 -d',')"
+        service_executable="$(echo ${service_info}|cut -f3 -d',')"
+
+        if [[ -z ${service_info} || -z ${service_script} || -z ${pid_file} || -z ${service_executable} ]]; then
+        	printf "ERROR: %s\n\n" "La configuración del servicio ${nombre} no está completa (verificar ${services_data}/${nombre})"
+        	exit 1
+        else
+            # Tenemos toda la información necesaria
+            if ! [[ -s ${service_script} ]]; then
+            	printf "ERROR: %s\n\n" "El script de arranque y parada ${service_script} para el servicio ${nombre} no existe o ne se puede leer"
+            	exit 1
+            fi;
+
+            ${service_script} status > /dev/null
+            if [[ $? -ne 0 ]]; then
+            	printf "WARNING: %s\n\n" "El servicio ${nombre} no está arrancado"
+            fi;
+
+            # Todo está OK, arrancamos
+            ${service_script} restart
+
+            # Verificamos varias veces si el proceso está operativo
+            service_started=-1	# 0=true
+            for s in 1 5 15; do
+            	sleep ${s}
+            	if [[ -e ${pid_file} ]]; then
+           			pid_service=`cat ${pid_file}`
+            		if [[ $(ps -q ${pid_service} -o cmd|awk '{ print $1 }') == ${service_executable} ]]; then
+            			kill -s 0 `cat ${pid_file}`
+            			service_started=$?
+            		fi
+            	fi
+
+            	# Si no hay fichero pid, o el pid del fichero no corresponde con el servicio le preguntamos al script de init.d
+            	${service_script} status > /dev/null
+            	service_started=$?
+
+            	if [[ ${service_started} -eq 0 ]]; then
+            		break
+            	fi;
+            done;
+
+            if [[ ${service_started} -ne 0 ]]; then
+           		printf "ERROR: %s\n\n" "El servicio ${nombre} no se ha podido arrancar"
+           		exit 1
+           	else
+           		printf "\nServicio %s rearrancado correctamente\n" ${nombre}
+           		log "Servicio ${nombre} rearrancado manualmente por gesaplctl"
+           	fi;
+
+           	# Quitamos la marca de "servicio parado"
+           	rm -f "${services_data}/${nombre}.stop"
+           	if  [[ $? -ne 0 ]]; then
+           		printf "WARNING: %s\n" "No se ha podido reactivar la configuración de ${nombre}"
+           		log "WARNING: No se ha podido reactivar la configuración de ${nombre}\n"
+           	fi;
+            # Le enviamos una señal al demonio para que tenga en cuenta la nueva configuración
+            if [[ -r ${pid_gesapld} ]]; then
+            	if ps -hq `cat ${pid_gesapld}` -o cmd|grep -q ${geaspld_bin}; then
+            		kill -s SIGUSR1 `cat ${pid_gesapld}`
+           		fi;
+           	fi;
+
+        fi;
+		;;
+
 	*)
 		printf "ERROR: Comando NO IMPLEMENTADO\n"
 		;;
