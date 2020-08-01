@@ -42,9 +42,15 @@ cd /
 # Capturamos la señal TERM para acabar el demonio limpiamente
 trap "mkdir -p \"${tmp_dir}\" && touch \"${tmp_dir}/${stop_flag}\"" SIGTERM
 
+# Capturamos la señal SIGUSR1 que sera utilizada para notificar al demonio que hemos cambiado la configuración
+# o que deberíamos parar ya
+
+
 # PROCESO HIJO
 
 if [[ "$1" = "child" ]] ; then
+
+    shift
 
     # Establecemos un umask por defecto, independiente de el del sistema
     umask 0022
@@ -84,11 +90,12 @@ fi
 
 # Esta es la parte que se ejecuta por el hijo, una vez hecho el fork
 
-log "Demonio gesapld iniciado"
-
 exec >> ${log_file}
 exec 2>>  ${log_file}
 exec 0< /dev/null
+
+echo $$ > ${pid_gesapld}
+log "Demonio gesapld iniciado"
 
 while ! [[ -e ${stop_flag} ]]; do
     log "Monitorización de servicios en curso ..."
