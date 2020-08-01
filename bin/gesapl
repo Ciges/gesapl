@@ -179,7 +179,7 @@ esac;
 case ${comando} in
     ms)
         printf "%s\n"  "GesApl v${GESAPL_VERSION} - Aplicación de monitorización de servicios"
-        services_info_files="$(find "${services_data}" -type f|grep -v '_stopped$'|sort)"
+        services_info_files="$(find "${services_data}" -type f|grep -v '_stopped$'|grep -v '\.'|sort)"
 
         if [[ -n "${services_info_files}" ]]; then
             printf "\nMonitorización de servicios:\n"
@@ -199,22 +199,36 @@ case ${comando} in
                     log "Monitorización del servicio ${service}: ${status}"
 
                     # Si el servicio está caído mandar un email a los admins
+                    # Con este flag controlamos que sólo enviemos un email :-)
+                    mail_flag="${services_data}/${service}.mailsent"
                     if [[ "${status}" == "KO" ]]; then
-                        now="$(date +'%b %e %T')"
-                        for email in `echo $admin_emails|tr ',' ' '`; do
-                            printf "%s El servicio %s está caído (servidor %s)\n" "${now}" ${service} "$(hostname)"|mail -s "Servicio ${service} KO en el servidor $(hostname)" ${email}
-                        done;
+                        if ! [[ -e ${mail_flag} ]]; then
+                            now="$(date +'%b %e %T')"
+                            for email in `echo $admin_emails|tr ',' ' '`; do
+                                printf "%s El servicio %s está caído (servidor %s)\n" "${now}" ${service} "$(hostname)"|mail -s "Servicio ${service} KO en el servidor $(hostname)" ${email}
+                            done;
+                            touch ${mail_flag}
+                        fi;
+                    else
+                        [[ -e ${mail_flag} ]] && rm ${mail_flag}
                     fi;
                 else
                     printf "\t- %s : %s (%s!) (%s)\n" "${service}" "${status}" "${status_message}" "${now}"
                     log "Monitorización del servicio ${service}: ${status} - ${status_message}"
 
                     # Si el servicio está caído mandar un email a los admins
+                    # Con este flag controlamos que sólo enviemos un email :-)
+                    mail_flag="${services_data}/${service}.mailsent"
                     if [[ "${status}" == "KO" ]]; then
-                        now="$(date +'%b %e %T')"
-                        for email in `echo $admin_emails|tr ',' ' '`; do
-                            printf "%s El servicio %s está caído (servidor %s, mensaje de estado \"%s\")\n" "${now}" ${service} "${status_message}" "$(hostname)"|mail -s "Servicio ${service} KO en el servidor $(hostname)" ${email}
-                        done;
+                        if ! [[ -e ${mail_flag} ]]; then
+                            now="$(date +'%b %e %T')"
+                            for email in `echo $admin_emails|tr ',' ' '`; do
+                                printf "%s El servicio %s está caído (servidor %s, mensaje de estado \"%s\")\n" "${now}" ${service} "${status_message}" "$(hostname)"|mail -s "Servicio ${service} KO en el servidor $(hostname)" ${email}
+                            done;
+                            touch ${mail_flag}
+                        fi;
+                    else
+                        [[ -e ${mail_flag} ]] && rm ${mail_flag}
                     fi;
                  fi;
             done;
@@ -269,7 +283,7 @@ case ${comando} in
         ;;
     ls)
         printf "%s\n"  "GesApl v${GESAPL_VERSION} - Aplicación de monitorización de servicios"
-        services_info_files="$(find "${services_data}" -type f|grep -v '_stopped$'|sort)"
+        services_info_files="$(find "${services_data}" -type f|grep -v '_stopped$'|grep -v '\.'|sort)"
 
         if [[ -n "${services_info_files}" ]]; then
             printf "\nServicios monitorizados:\n"
