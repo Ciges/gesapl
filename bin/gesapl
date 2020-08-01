@@ -298,7 +298,11 @@ case ${comando} in
         services_info_files="$(find "${services_data}" -type f|grep -v '\.'|sort)"
 
         if [[ -n ${services_info_files} ]]; then
-            printf "\nServicios monitorizados:\n"
+            printf "\nServicios monitorizados: "
+            for f in ${services_info_files}; do printf "%s " ${f##*/}; done
+            printf "\n\n"
+
+            printf "Configuración de los servicios:\n"
             for f in ${services_info_files}; do
                 service_info="$(cat ${f})"
                 service_script="$(echo ${service_info}|cut -f1 -d',')"
