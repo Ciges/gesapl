@@ -50,6 +50,7 @@ fi;
 case $1 in
     -as|--arrancar_servicio)
         comando="as"
+        shift
         nombre=$1
         shift
 
@@ -61,6 +62,7 @@ case $1 in
         ;;
     -ds|--detener_servicio)
         comando="ds"
+        shift
         nombre=$1
         shift
 
@@ -98,6 +100,47 @@ esac;
 case ${comando} in
 	"ls")
 		$(echo ${monitor_services}|awk '{ print $1 }') -ls
+		;;
+	"as")
+	    printf "%s\n\n"  "GesApl Control v${GESAPLCTL_VERSION} - Control de servicios monitorizados por GesApl"
+
+        service_info_file="${services_data}/${nombre}"
+        if ! [[ -r ${service_info_file} ]]; then
+        	printf "ERROR: %s\n\n" "El servicio ${nombre} no está configurado (no existe o no se puede leer ${services_data}/${nombre}"
+        	exit 1
+        fi;
+
+        service_info="$(cat ${service_info_file})"
+
+        service_script="/etc/init.d/$(echo ${service_info}|cut -f1 -d',')"
+        pid_file="$(echo ${service_info}|cut -f2 -d',')"
+        service_executable="$(echo ${service_info}|cut -f3 -d',')"
+
+        if [ -z "${service_info}" -o -z "${service_script}" -o -z "${pid_file}" -o -z "${service_executable}" ]; then
+        	printf "ERROR: %s\n\n" "La configuración del servicio ${nombre} no está completa (verificar ${services_data}/${nombre})"
+        	exit 1
+        else
+        	##DEBUGprintf "Configuración de %s :  script de arranque=%s, fichero pid=%s, service_executable=%s\n" ${nombre} ${service_script} ${pid_file} ${service_executable}
+
+            # Tenemos toda la información necesaria
+            if ! [[ -s ${service_script} ]]; then
+            	printf "ERROR: %s\n\n" "El script de arranque y parada ${service_script} para el servicio ${nombre} no existe o ne se puede leer"
+            	exit 1
+            fi;
+            ${service_script} status > /dev/null
+            if [[ $? -eq 0 ]]; then
+            	printf "ERROR: %s\n\n" "El servicio ${nombre} ya está arrancado"
+            	exit 1
+            fi;
+
+            # Todo está OK, arrancamos
+            ${service_script} start
+
+            # TODO:
+            # - Verificar que está correctamente arrancado
+            # - Dar de alta su monitorización
+
+        fi;
 		;;
 	*)
 		printf "ERROR: Comando NO IMPLEMENTADO\n"
