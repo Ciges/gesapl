@@ -1,0 +1,105 @@
+#!/bin/bash
+
+# Script de control de servicios monitorizados por GesApl
+# Permite arrancar, detener y reinicar los servicios configurados en GesApl
+
+# CONFIGURACIÓN
+CONFIG_FILE="/etc/gesapl/gesapl.conf"
+GESAPLCTL_VERSION="1.00"
+
+# FUNCIONES
+function help {
+    printf "%s\n"  "GesApl Control v${GESAPLCTL_VERSION} - Control de servicios monitorizados por GesApl"
+
+    printf "\nUso: gesaplctl orden parámetros
+
+Siendo orden una de las siguientes: --arrancar_servicio (o -as), --detener_servicio (o -ds), --reiniciar_servicio (o -rs), --listar-servicios (o -ls), --ayuda (o -a)
+
+    -as | --arrancar_servicio nombre :  arranca el servicio configurado con ese nombre
+
+    -ds | --detener_servicio nombre :  detieene el servicio configurado con ese nombre
+
+    -rs | --arrancar_servicio nombre :  reinicia el servicio configurado con ese nombre
+
+    -ls | --listar_servicios :  Lista los servicios configurados y los parámetros registrados para cada uno
+
+    -a | --ayuda :  Muestra este mensaje explicativo
+
+Este script se debe de ejecutar con derechos de 'root'
+
+"
+}
+
+# INICIO DEL CODIGO
+if ! [ -r ${CONFIG_FILE} ];  then
+    printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
+    help
+    exit 1
+fi;
+
+source ${CONFIG_FILE}
+
+
+# Parseamos los argumentos
+if [[ $# -eq 0 ]]; then
+    printf "ERROR %s\n\n" "Número de parámetros incorrecto"
+    help
+    exit 1
+fi;
+
+case $1 in
+    -as|--arrancar_servicio)
+        comando="as"
+        nombre=$1
+        shift
+
+        if [ -z "${nombre}" ]; then
+            printf "ERROR %s\n\n" "Número de parámetros incorrecto"
+            help
+            exit 1
+        fi
+        ;;
+    -ds|--detener_servicio)
+        comando="ds"
+        nombre=$1
+        shift
+
+        if [ -z "${nombre}" ]; then
+            printf "ERROR %s\n\n" "Número de parámetros incorrecto"
+            help
+            exit 1
+        fi
+        ;;
+    -rs|--reiniciar_servicio)
+        comando="as"
+        nombre=$1
+        shift
+
+        if [ -z "${nombre}" ]; then
+            printf "ERROR %s\n\n" "Número de parámetros incorrecto"
+            help
+            exit 1
+        fi
+        ;;
+    -ls|--listar_servicios)
+        comando="ls"
+        shift
+        ;;
+    -a|--ayuda)
+        help
+        ;;
+    *)
+        printf "ERROR %s\n\n" "Orden no reconocida"
+        help
+        exit 1
+        ;;
+esac;
+
+case ${comando} in
+	"ls")
+		$(echo ${monitor_services}|awk '{ print $1 }') -ls
+		;;
+	*)
+		printf "ERROR: Comando NO IMPLEMENTADO\n"
+		;;
+esac
