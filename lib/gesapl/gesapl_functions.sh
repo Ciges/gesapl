@@ -15,5 +15,8 @@ function services_configs {
 
 # Devuelve el listado de servicios monitorizados
 function active_services {
-	for c in $(services_configs); do printf "%s " ${c##*/}; done
+	for c in $(services_configs); do 
+		! [[ -e ${c}.stop ]] && printf "%s " ${c##*/}
+	done;
+	printf "\n"
 }

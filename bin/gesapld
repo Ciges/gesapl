@@ -34,7 +34,7 @@ function processUserSignal {
 
     log "Recibida señal SIGUSR1"
     # Revisar los servicios a monitorizar
-    log "Servicios activos: $(active_services)"
+    log "Servicios monitorizados: $(active_services)"
 
     # ¿Paramos el demonio ya?
     if [[ -e ${stop_flag} ]]; then

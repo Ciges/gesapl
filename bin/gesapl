@@ -193,10 +193,10 @@ case ${comando} in
         printf "%s\n"  "GesApl v${GESAPL_VERSION} - Aplicación de monitorización de servicios"
         services_info_files="$(services_configs)"
 
+
         if [[ -n ${services_info_files} ]]; then
             printf "\nMonitorización de servicios:\n"
-            for f in ${services_info_files}; do
-                service=${f##*/}
+            for service in $(active_services); do
 
                 status_message="$(monitor "${service}")"
                 if [[ $? -eq 0 ]]; then
@@ -300,9 +300,7 @@ case ${comando} in
         services_info_files="$(services_configs)"
 
         if [[ -n ${services_info_files} ]]; then
-            printf "\nServicios monitorizados: "
-            for f in ${services_info_files}; do printf "%s " ${f##*/}; done
-            printf "\n\n"
+            printf "\nServicios monitorizados: $(active_services)\n\n"
 
             printf "Configuración de los servicios:\n"
             for f in ${services_info_files}; do
