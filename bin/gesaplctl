@@ -193,7 +193,7 @@ case ${comando} in
            	fi;
             # Le enviamos una señal al demonio para que tenga en cuenta la nueva configuración
             if [[ -r ${pid_gesapld} ]]; then
-            	if ps -hq `cat ${pid_gesapld}` -o cmd|grep -q ${geaspld_bin}; then
+            	if ps -hq `cat ${pid_gesapld}` -o cmd|grep -q ${gesapld_bin}; then
             		kill -s SIGUSR1 `cat ${pid_gesapld}`
            		fi;
            	fi;
@@ -278,7 +278,7 @@ case ${comando} in
            	fi;
             # Le enviamos una señal al demonio para que tenga en cuenta la nueva configuración
             if [[ -r ${pid_gesapld} ]]; then
-            	if ps -hq `cat ${pid_gesapld}` -o cmd|grep -q ${geaspld_bin}; then
+            	if ps -hq `cat ${pid_gesapld}` -o cmd|grep -q ${gesapld_bin}; then
             		kill -s SIGUSR1 `cat ${pid_gesapld}`
            		fi;
            	fi;
@@ -356,7 +356,7 @@ case ${comando} in
            	fi;
             # Le enviamos una señal al demonio para que tenga en cuenta la nueva configuración
             if [[ -r ${pid_gesapld} ]]; then
-            	if ps -hq `cat ${pid_gesapld}` -o cmd|grep -q ${geaspld_bin}; then
+            	if ps -hq `cat ${pid_gesapld}` -o cmd|grep -q ${gesapld_bin}; then
             		kill -s SIGUSR1 `cat ${pid_gesapld}`
            		fi;
            	fi;
