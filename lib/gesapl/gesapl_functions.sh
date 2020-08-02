@@ -57,3 +57,17 @@ function must_be_root {
         exit 1
     fi;
 }
+
+# Devuelve un valor de retorno 0 si el demonio está arrancado y de 1 si no lo está
+function gesapld_started {
+
+    # Buscamos por el pid del fichero
+    if [[ -r ${pid_gesapld} ]]; then
+        if ps -hq `cat ${pid_gesapld}` -o cmd|grep ${gesapld_bin}|grep -v grep|grep -q 'refork_daemon'; then
+            return 0
+        fi;
+    fi
+
+    # Y si no es posible buscamos procesos en el sistema
+    ps -ef|grep ${gesapld_bin}|grep -v grep|grep -q 'refork_daemon'
+}
