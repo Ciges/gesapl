@@ -22,6 +22,12 @@ function services_configs {
 	find "${services_data}" -type f|grep -v '\.'|sort
 }
 
+# Devuelve el listado de servicios configurados
+function configured_services {
+    for c in $(services_configs); do printf "%s " ${c##*/}; done;
+    printf "\n"
+}
+
 # Devuelve el listado de servicios monitorizados
 function active_services {
 	for c in $(services_configs); do 
