@@ -56,7 +56,37 @@ elif [[ $# -eq 1 ]]; then
     shift
 fi;
 
-printf "%s\n\n"  "GesApl Informes v${GESAPLINFO_VERSION} - Informe de uso de GesApl\n\n"
+
+# INICIO DEL CODIGO
+
+# Colores
+GREEN='\e[1;32m'
+RED='\e[1;31m'
+NC='\e[0m' # No Color
+
+now="$(date +'%b %e %T')"
+
+printf "%s\n\n"  "GesApl Informes v${GESAPLINFO_VERSION}"
+
+printf "%s\n\n" "Informe de uso de GesApl: ${now}"
+
+printf "Servicios monitorizados: $(active_services)\n"
+
+printf "Estado actual del demonio: "
+if gesapld_started; then
+    printf "${GREEN}Activo${NC}"
+else
+    printf "${RED}Inactivo${NC}"
+fi;
+printf "\n"
+
+
+printf "\nServicios configurados: $(configured_services)\n"
+for s in $(configured_services); do
+    config="$(service_configuration ${s})"
+    printf "\t- %s\n" "${config}"
+done;
+
 
 
 
