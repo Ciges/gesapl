@@ -101,10 +101,8 @@ if [[ "$1" != "XXrefork_daemonXX" ]] ; then
             # Registramos el comando
             log_command "gesapld $@"
 
-            if [[ `id -u` -ne 0 ]]; then
-                printf "ERROR: Este script debe de ser ejecutado con derechos de root\n"
-                exit 1
-            fi;
+            # Este comando debe ser ejecutado con derechos de 'root'
+            must_be_root
 
             if gesapld_started; then
                 printf "ERROR: Ya hay un demonio gesapld en ejecución\n"
@@ -120,10 +118,8 @@ if [[ "$1" != "XXrefork_daemonXX" ]] ; then
             # Registramos el comando
             log_command "gesapld $@"
 
-            if [[ `id -u` -ne 0 ]]; then
-                printf "ERROR: Este script debe de ser ejecutado con derechos de root\n"
-                exit 1
-            fi;
+            # Este comando debe ser ejecutado con derechos de 'root'
+            must_be_root
 
             printf "Deteniendo gesapld ...\n"
             touch ${stop_flag}

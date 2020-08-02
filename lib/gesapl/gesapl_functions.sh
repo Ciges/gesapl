@@ -29,3 +29,11 @@ function active_services {
 	done;
 	printf "\n"
 }
+
+# Función de control, si el usuario no es root interrumpe la ejecución
+function must_be_root {
+    if [[ `id -u` -ne 0 ]]; then
+        printf "ERROR: Este comando debe de ser ejecutado con derechos de root\n"
+        exit 1
+    fi;
+}
