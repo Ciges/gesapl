@@ -30,6 +30,20 @@ function active_services {
 	printf "\n"
 }
 
+# Dado un servicio, devuelve su configuración, en una cadena de texto por la salida estandard
+function service_configuration {
+    if [[ -r ${services_data}/${1} ]]; then
+        service_info="$(cat ${services_data}/${1} )"
+        service_script="$(echo ${service_info}|cut -f1 -d',')"
+        pid_file="$(echo ${service_info}|cut -f2 -d',')"
+        service_executable="$(echo ${service_info}|cut -f3 -d',')"
+        printf "%s :  script de arranque=/etc/init.d/%s, fichero pid=%s, service_executable=%s\n" ${1} ${service_script} ${pid_file} ${service_executable}
+    else
+        printf "ERROR: No se puede leer la configuración del servicio % (%)\n" ${1} "${services_data}/${1}"
+        exit 1
+    fi;
+}
+
 # Función de control, si el usuario no es root interrumpe la ejecución
 function must_be_root {
     if [[ `id -u` -ne 0 ]]; then

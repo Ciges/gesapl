@@ -327,11 +327,8 @@ case ${comando} in
 
             printf "Configuración de los servicios:\n"
             for f in ${services_info_files}; do
-                service_info="$(cat ${f})"
-                service_script="$(echo ${service_info}|cut -f1 -d',')"
-                pid_file="$(echo ${service_info}|cut -f2 -d',')"
-                service_executable="$(echo ${service_info}|cut -f3 -d',')"
-                printf "\t- %s :  script de arranque=/etc/init.d/%s, fichero pid=%s, service_executable=%s\n" ${f##*/} ${service_script} ${pid_file} ${service_executable}
+                config="$(service_configuration ${f##*/})"
+                printf "\t- %s\n" "${config}"
             done;
         else
             printf "Ningún servicio está siendo monitorizado por gesapl"

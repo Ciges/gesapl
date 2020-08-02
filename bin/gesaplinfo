@@ -56,5 +56,7 @@ elif [[ $# -eq 1 ]]; then
     shift
 fi;
 
-printf "%s\n\n"  "GesApl Informes v${GESAPLINFO_VERSION} - Informe de uso de GesApl"
+printf "%s\n\n"  "GesApl Informes v${GESAPLINFO_VERSION} - Informe de uso de GesApl\n\n"
+
+
 
