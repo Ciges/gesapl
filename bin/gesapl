@@ -213,6 +213,8 @@ esac;
 
 case ${comando} in
     ms)
+        error_message=""  # The error message is show at the end 
+
         printf "%s\n"  "GesApl v${GESAPL_VERSION} - Aplicación de monitorización de servicios"
         services_info_files="$(services_configs)"
 
@@ -231,6 +233,11 @@ case ${comando} in
                 now="$(date +'%b %e %T')"
                 if [[ -z ${status_message} ]]; then
                     printf "\t- %s : %s (%s)\n" "${service}" "${status}" "${now}"
+                    if [[ -w ${log_file} ]]; then
+                        log "Monitorización del servicio ${service}: ${status}"
+                    else
+                        error_message="WARNING: No ha sido posible escribir en el log ${log_file} ¿problema de permisos?"
+                    fi;
 
                     # Si el servicio está caído mandar un email a los admins
                     # Con este flag controlamos que sólo enviemos un email :-)
@@ -248,6 +255,11 @@ case ${comando} in
                     fi;
                 else
                     printf "\t- %s : %s (%s!) (%s)\n" "${service}" "${status}" "${status_message}" "${now}"
+                    if [[ -w ${log_file} ]]; then
+                        log "Monitorización del servicio ${service}: ${status}"
+                    else
+                        error_message="WARNING: No ha sido posible escribir en el log ${log_file} ¿problema de permisos?"
+                    fi;
 
                     # Si el servicio está caído mandar un email a los admins
                     # Con este flag controlamos que sólo enviemos un email :-)
@@ -265,10 +277,16 @@ case ${comando} in
                     fi;
                  fi;
             done;
+        
         else
             mensaje="Monitorización no realizada:  Ningún servicio está configurado en gesapl"
             printf "$mensaje"
             log "$mensaje"
+        fi;
+
+        printf "\n"
+        if [[ -n  ${error_message} ]]; then
+            printf "%s\n" "${error_message}"
         fi;
         ;;
 
