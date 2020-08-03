@@ -125,6 +125,8 @@ fi;
 printf "\n%s\n\n" "--------------------------------------------------------------"
 
 printf "Servicios configurados: $(configured_services)\n"
+
+printf "Configuración registrada:\n"
 for s in $(configured_services); do
     config="$(service_configuration ${s})"
     printf "\t- %s\n" "${config}"
