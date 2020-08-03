@@ -8,9 +8,23 @@
 
 # CONFIGURACIÓN
 CONFIG_FILE="/etc/gesapl/gesapl.conf"
+if ! [[ -r ${CONFIG_FILE} ]];  then
+    printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
+    help
+    exit 1
+fi;
+source ${CONFIG_FILE}
+
 GESAPLINFO_VERSION="1.00"
 
+# Archivo en el que se grabará el informe de salida
+fichero_salida="${tmp_dir}/gesaplinfo_$(date +%Y%m%d-%H%M)"
+[[ -e ${fichero_salida} ]] && rm ${fichero_salida}
+
+
 # FUNCIONES
+
+# Muestra la ayuda del script
 function help {
     printf "%s\n"  "GesApl Informes v${GESAPLINFO_VERSION} - Informe de uso de GesApl"
 
@@ -27,14 +41,9 @@ function help {
 "
 }
 
-# INICIO DEL CODIGO
-if ! [[ -r ${CONFIG_FILE} ]];  then
-    printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
-    help
-    exit 1
-fi;
 
-source ${CONFIG_FILE}
+# INICIO DEL CODIGO
+
 
 
 # Registramos el comando
@@ -56,9 +65,6 @@ elif [[ $# -eq 1 ]]; then
     shift
 fi;
 
-
-# INICIO DEL CODIGO
-
 # Colores
 GREEN='\e[1;32m'
 RED='\e[1;31m'
@@ -66,70 +72,79 @@ NC='\e[0m' # No Color
 
 now="$(date +'%b %e %T')"
 
-printf "%s\n\n"  "GesApl Informes v${GESAPLINFO_VERSION}"
+printf "GesApl Informes v${GESAPLINFO_VERSION}
 
-printf "%s\n\n" "Informe de uso de GesApl: ${now}"
+El informe mostrada se grabará en ${fichero_salida}
+Si indica una dirección de email el informe se enviará también por correo electrónico.
 
-printf "\n%s\n\n" "--------------------------------------------------------------"
+--------------------------------------------------------------\n\n"
+
+printf "%s\n" "Informe de uso de GesApl: ${now}" | tee -a "${fichero_salida}"
+
+printf "\n%s\n\n" "--------------------------------------------------------------" | tee -a "${fichero_salida}"
 
 list_active_services="$(active_services)"
-printf "Servicios monitorizados: $list_active_services\n"
+printf "Servicios monitorizados: $list_active_services\n" | tee -a "${fichero_salida}"
 
-printf "\nEstado actual del demonio: "
+printf "\nEstado actual del demonio: " | tee -a "${fichero_salida}"
 if gesapld_started; then
     printf "${GREEN}Activo${NC}"
+    printf "Activo\n" >> "${fichero_salida}"
 else
-    printf "${RED}Inactivo${NC}"
+    printf "${RED}Inactivo${NC}" | tee -a "${fichero_salida}"
+    printf "Inactivo\n" >> "${fichero_salida}"
 fi;
-printf "\n"
+printf "\n" | tee -a "${fichero_salida}"
 
-printf "\nEstado de cada servicio: \n"
+printf "\nEstado de cada servicio: \n" | tee -a "${fichero_salida}"
 for s in $(configured_services); do
-    printf "\n\t- %s: " ${s}
+    printf "\n\t- %s: " ${s} | tee -a "${fichero_salida}"
 
     service_status_message="$(monitor ${s})"
     if [[ $? -eq 0 ]]; then 
         printf "${GREEN}Activo${NC}\n"
+        printf "Activo\n" >> "${fichero_salida}"
     else
         printf "${RED}Inactivo${NC}\n"
+        printf "Inactivo\n" >> "${fichero_salida}"
     fi;
 
     if ! echo "$list_active_services" | grep -qP "(^|\s+)${s}(\$|\s+)"; then
-        printf "\t  %s\n" "Este servicio no está siendo actualmente monitorizado"
+        printf "\t  %s\n" "Este servicio no está siendo actualmente monitorizado" | tee -a "${fichero_salida}"
     fi;
     last_control="$(grep "$(printf "${log_monitor_service_format}" ${s})" "${log_file}"|tail -n1)"
-    printf "\t  Último control realizado: "
+    printf "\t  Último control realizado: " | tee -a "${fichero_salida}"
     if [[ -n ${last_control} ]]; then
-        printf "%s\n" "${last_control}"
+        printf "%s\n" "${last_control}" | tee -a "${fichero_salida}"
     else
-        printf "%s\n" "No hay registros"
+        printf "%s\n" "No hay registros" | tee -a "${fichero_salida}"
     fi;
 
-    [[ -n ${service_status_message} ]] && printf "\t  Error obtenido: %s\n" "${service_status_message}"
+    [[ -n ${service_status_message} ]] && printf "\t  Error obtenido: %s\n" "${service_status_message}" | tee -a "${fichero_salida}"
 
 
 done
 
-printf "\n%s\n\n" "--------------------------------------------------------------"
+printf "\n%s\n\n" "--------------------------------------------------------------" | tee -a "${fichero_salida}"
 
-printf "Últimos 20 comandos ejecutados en GesApl (y usuario que los ejecutó)\n\n"
+printf "Últimos 20 comandos ejecutados en GesApl (y usuario que los ejecutó)\n\n" | tee -a "${fichero_salida}"
 if [[ -r ${log_commands_file} ]]; then
     tail -n20 "${log_commands_file}"|tac|while read l; do
-        printf "\t  %s\n" "${l}"
+        printf "\t  %s\n" "${l}" | tee -a "${fichero_salida}"
     done
 else
-    printf "%s\n" "No hay registros"
+    printf "%s\n" "No hay registros" | tee -a "${fichero_salida}"
 fi;
 
 
-printf "\n%s\n\n" "--------------------------------------------------------------"
+printf "\n%s\n\n" "--------------------------------------------------------------" | tee -a "${fichero_salida}"
 
-printf "Servicios configurados: $(configured_services)\n"
+printf "Servicios configurados: $(configured_services)\n" | tee -a "${fichero_salida}"
 
-printf "Configuración registrada:\n"
+printf "Configuración registrada:\n" | tee -a "${fichero_salida}"
 for s in $(configured_services); do
     config="$(service_configuration ${s})"
-    printf "\t- %s\n" "${config}"
+    printf "\t- %s\n" "${config}" | tee -a "${fichero_salida}"
 done;
 
 
