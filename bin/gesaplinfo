@@ -108,9 +108,18 @@ for s in $(configured_services); do
     [[ -n ${service_status_message} ]] && printf "\t  Error obtenido: %s\n" "${service_status_message}"
 
 
-
-
 done
+
+printf "\n%s\n\n" "--------------------------------------------------------------"
+
+printf "Últimos 20 comandos ejecutados en GesApl (y usuario que los ejecutó)\n\n"
+if [[ -r ${log_commands_file} ]]; then
+    tail -n20 "${log_commands_file}"|tac|while read l; do
+        printf "\t  %s\n" "${l}"
+    done
+else
+    printf "%s\n" "No hay registros"
+fi;
 
 
 printf "\n%s\n\n" "--------------------------------------------------------------"
