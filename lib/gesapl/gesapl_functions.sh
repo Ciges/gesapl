@@ -13,7 +13,7 @@ function log {
 function log_command {
 	if [[ $SHLVL -le 3 ]]; then		# Only log command when called directly by an user
     	now="$(date +'%b %e %T')"
-    	printf "%s %s (%s)\n" "${now}" "$1"  ${USER} >> ${log_commands_file}
+    	printf "%s %s (%s)\n" "${now}" "$(echo $@|tr -d \\n)"  ${USER} >> ${log_commands_file}
     fi;
 }
 
