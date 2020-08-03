@@ -186,7 +186,7 @@ case ${comando} in
                 if [[ -z ${status_message} ]]; then
                     printf "\t- %s : %s (%s)\n" "${service}" "${status}" "${now}"
                     if [[ -w ${log_file} ]]; then
-                        log_message="$(printf "${log_monitor_service_format}" ${service} "${status}")"
+                        log_message="$(printf "${log_monitor_service_format}" ${service}) ${status}"
                         log "${log_message}"
                     else
                         error_message="WARNING: No ha sido posible escribir en el log ${log_file} ¿problema de permisos?"
@@ -210,7 +210,7 @@ case ${comando} in
                     printf "\t- %s : %s (%s!) (%s)\n" "${service}" "${status}" "${status_message}" "${now}"
                     if [[ -w ${log_file} ]]; then
                         status="${status} - ${status_message}"
-                        log_message="$(printf "${log_monitor_service_format}" ${service} "${status}")"
+                        log_message="$(printf "${log_monitor_service_format}" ${service}) ${status})"
                         log "${log_message}"
                     else
                         error_message="WARNING: No ha sido posible escribir en el log ${log_file} ¿problema de permisos?"
