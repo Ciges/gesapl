@@ -153,6 +153,8 @@ for s in $(configured_services); do
     printf "\t- %s\n" "${config}" | tee -a "${fichero_salida}"
 done;
 
-
-mail -s "Informe de uso de GesApl: ${now} (enviado desde $(hostname))" ${email} < ${fichero_salida}
-printf "\n\nInforme enviado a la dirección de correo %s\n" ${email}
+printf "\n"
+if [[ -n ${email} ]]; then
+    mail -s "Informe de uso de GesApl: ${now} (enviado desde $(hostname))" ${email} < ${fichero_salida}
+    printf "\nInforme enviado a la dirección de correo %s\n" ${email}
+fi;
