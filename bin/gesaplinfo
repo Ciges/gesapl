@@ -70,9 +70,12 @@ printf "%s\n\n"  "GesApl Informes v${GESAPLINFO_VERSION}"
 
 printf "%s\n\n" "Informe de uso de GesApl: ${now}"
 
-printf "Servicios monitorizados: $(active_services)\n"
+printf "\n%s\n\n" "--------------------------------------------------------------"
 
-printf "Estado actual del demonio: "
+list_active_services="$(active_services)"
+printf "Servicios monitorizados: $list_active_services\n"
+
+printf "\nEstado actual del demonio: "
 if gesapld_started; then
     printf "${GREEN}Activo${NC}"
 else
@@ -80,8 +83,28 @@ else
 fi;
 printf "\n"
 
+printf "\nEstado de cada servicio: \n"
+for s in $(configured_services); do
+    printf "\n\t- %s: " ${s}
 
-printf "\nServicios configurados: $(configured_services)\n"
+    service_status_message="$(monitor ${s})"
+    if [[ $? -eq 0 ]]; then 
+        printf "${GREEN}Activo${NC}\n"
+
+    else
+        printf "${RED}Inactivo${NC}\n"
+    fi;
+    if ! echo "$list_active_services" | grep -qP "(^|\s+)${s}(\$|\s+)"; then
+        printf "\t  %s\n" "Este servicio no está siendo actualmente monitorizado"
+    fi;
+    [[ -n ${service_status_message} ]] && printf "\t  (%s)\n" "${service_status_message}"
+
+done
+
+
+printf "\n%s\n\n" "--------------------------------------------------------------"
+
+printf "Servicios configurados: $(configured_services)\n"
 for s in $(configured_services); do
     config="$(service_configuration ${s})"
     printf "\t- %s\n" "${config}"
