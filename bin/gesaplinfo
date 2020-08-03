@@ -60,7 +60,12 @@ elif [[ $# -eq 1 ]]; then
         exit 0
     else
         email=$1
-       
+
+        # ¿La dirección de correo es válida?
+        if ! [[ "${email}" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$ ]]; then
+            printf "ERROR: %s\n\n" "La dirección de correo ${email} no es válida"
+            exit 1
+        fi
     fi;
     shift
 fi;
@@ -148,5 +153,5 @@ for s in $(configured_services); do
 done;
 
 
-
-
+mail -s "Informe de uso de GesApl: ${now} (enviado desde $(hostname))" ${email} < ${fichero_salida}
+printf "\n\nInforme enviado a la dirección de correo %s\n" ${email}
