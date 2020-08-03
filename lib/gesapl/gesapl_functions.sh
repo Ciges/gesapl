@@ -71,3 +71,63 @@ function gesapld_started {
     # Y si no es posible buscamos procesos en el sistema
     ps -ef|grep ${gesapld_bin}|grep -v grep|grep -q 'refork_daemon'
 }
+
+# Monitoriza el servicio indicado
+# Devuelve un valor de retorno 0 si está presente, 1 en caso contrario
+# Por la salida estandar devuelve un mensaje de error si lo hubiera
+function monitor {
+    local service
+    local service_info
+    local service_pid
+    local service_script
+    local pid_file
+    local service_executable
+    local status
+    local status_message
+
+    service="${1}"
+    if ! [[ -f ${services_data}/${service} ]]; then
+        printf "ERROR: %s\n\n" "El servicio ${nombre} no está siendo monitorizado por gesappl"
+        exit 1
+    fi;
+
+    # Status KO por defecto
+    status=1
+    status_message=""
+
+    service_info="$(cat ${services_data}/${service})"
+    service_script="$(echo ${service_info}|cut -f1 -d',')"
+    pid_file="$(echo ${service_info}|cut -f2 -d',')"
+    service_executable="$(echo ${service_info}|cut -f3 -d',')"
+
+    # Verificamos el pid indicado en el fichero PID y si corresponde a proceso en ejecución del servicio
+    if [[ -r ${pid_file} ]]; then
+        local service_pid=`cat ${pid_file}`
+    
+        # Corresponde el PID a un proceso del sistema?
+        if ps -hq ${service_pid} > /dev/null; then
+            # El PID corresponde al ejecutable del servicio?
+            if [[ $(ps -hq ${service_pid} -o cmd|awk '{ print $1 }') == ${service_executable} ]]; then
+                status=0    # OK
+            else
+                status_message="El proceso con PID ${service_pid} existe pero no corresponde al servicio ${service_executable}"
+            fi;
+        else
+            status_message="No hay ningún proceso en el sistema con PID ${service_pid}"
+        fi;
+    else    
+        if ps -e -o cmd|awk '{ print $1 }'|grep -q ${service_executable}; then
+            status_message="El servicio está arrancado pero el fichero PID ${pid_file} no existe o no se puede leer"
+        fi;
+    fi;
+
+    # Si el fichero PID no existe, o no es coherente buscamos procesos en ejecución del servicio
+    if [[ ${status} -ne 0 ]]; then
+        ps -e -o cmd|awk '{ print $1 }'|grep -q ${service_executable}
+        status=$?
+    fi;
+
+    [[ -n ${status_message} ]] && printf "%s\n" "${status_message}"
+
+    return ${status}
+}
