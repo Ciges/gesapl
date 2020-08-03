@@ -90,14 +90,25 @@ for s in $(configured_services); do
     service_status_message="$(monitor ${s})"
     if [[ $? -eq 0 ]]; then 
         printf "${GREEN}Activo${NC}\n"
-
     else
         printf "${RED}Inactivo${NC}\n"
     fi;
+
     if ! echo "$list_active_services" | grep -qP "(^|\s+)${s}(\$|\s+)"; then
         printf "\t  %s\n" "Este servicio no está siendo actualmente monitorizado"
     fi;
-    [[ -n ${service_status_message} ]] && printf "\t  (%s)\n" "${service_status_message}"
+    last_control="$(grep "$(printf "${log_monitor_service_format}" ${s})" "${log_file}"|tail -n1)"
+    printf "\t  Último control realizado: "
+    if [[ -n ${last_control} ]]; then
+        printf "%s\n" "${last_control}"
+    else
+        printf "%s\n" "No hay registros"
+    fi;
+
+    [[ -n ${service_status_message} ]] && printf "\t  Error obtenido: %s\n" "${service_status_message}"
+
+
+
 
 done
 
