@@ -1,1 +1,0 @@
-- Para el envío de correos usa el comando `mail`, se entiende que en el sistema ya hay un servicio SMTP configurado
