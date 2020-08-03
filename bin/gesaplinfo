@@ -33,9 +33,10 @@ function help {
     Este script genera un informe de uso de GesApl y si se indica un email lo envía por correo.
 
     El informe consta de
-    - Una relación de programas monitorizados (sus nombres)
-    - Última hora de cada uno de esos programas. Si funcionan y el momento de su último control
-    - Relación de los últimos 20 comandos ejecutados en GesApl, con sus parámetros, fecha y hora de ejecución y usuario que lo lanzó
+    - Una relación de servicios monitorizados
+    - Estado de cada uno de estos servicios. Fecha y hora del último control realizado
+    - Últimos 20 comandos ejecutados en GesApl, con sus parámetros, fecha y hora de ejecución y usuario que lo lanzó
+    - Configuración de los servicios registrada
 
 
 "
