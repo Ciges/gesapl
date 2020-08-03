@@ -13,7 +13,7 @@ function help {
 
     printf "\nUso: gesapl orden parámetros
 
-Siendo orden una de las siguientes: --monitorizar_servicios (o -ms), --registrar_servicio (o -rs), --borrar_servicio (o -bs), -ls | --listar_servicios (o -ls), --ayuda (o -a)
+Siendo orden una de las siguientes: --monitorizar_servicios (o -ms), --registrar_servicio (o -rs), --borrar_servicio (o -bs), --listar_servicios (o -ls), --ayuda (o -a)
 
     -ms | --monitorizar_servicios :  Monitoriza los servicios configurados
 
@@ -21,7 +21,7 @@ Siendo orden una de las siguientes: --monitorizar_servicios (o -ms), --registrar
 
         El nombre de servicio es arbitrario, es el nombre con el que gesapl lo va a tratar
         El script de arranque es el nombre del script de arranque/parada en /etc/init.d
-        El service_executable es el nombre del service_executable con el que se le ve en el sistema
+        El service_executable es la ruta del binario con el que se le ve en la lista de procesos del sistema
 
         Si el servicio ya ha sido configurado y no se desea cambiarla sólo se necesita el nombre
 
