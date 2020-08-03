@@ -94,10 +94,10 @@ printf "Servicios monitorizados: $list_active_services\n" | tee -a "${fichero_sa
 printf "\nEstado actual del demonio: " | tee -a "${fichero_salida}"
 if gesapld_started; then
     printf "${GREEN}Activo${NC}"
-    printf "Activo\n" >> "${fichero_salida}"
+    printf "Activo" >> "${fichero_salida}"
 else
     printf "${RED}Inactivo${NC}" | tee -a "${fichero_salida}"
-    printf "Inactivo\n" >> "${fichero_salida}"
+    printf "Inactivo" >> "${fichero_salida}"
 fi;
 printf "\n" | tee -a "${fichero_salida}"
 
