@@ -23,6 +23,8 @@ Siendo orden una de las siguientes: --monitorizar_servicios (o -ms), --registrar
         El script de arranque es el nombre del script de arranque/parada en /etc/init.d
         El service_executable es el nombre del service_executable con el que se le ve en el sistema
 
+        Si el servicio ya ha sido configurado y no se desea cambiarla sólo se necesita el nombre
+
     -bs | --borrar_servicio nombre :  Borra el servicio indicado
 
     -ls | --listar_servicios :  Lista los servicios monitorizados y los parámetros registrados para cada uno
@@ -87,10 +89,17 @@ case $1 in
         nombre=$1
         shift
 
-        # Al borrar un servicio no borramos su configuración, la renombramos
-        # De esta forma podemos volver a registrarlo indicando sólo su nombre
+
         if [[ $# -eq 0 ]]; then
-            if [[ -r ${services_data}/${nombre}.deleted ]]; then
+            # Si el servicio está configurado y sólo tenemos el nombre cargamos su configuración
+            if [[ -r ${services_data}/${nombre} ]]; then
+                service_info="$(cat ${services_data}/${nombre})"
+                service_script="$(echo ${service_info}|cut -f1 -d',')"
+                pid_file="$(echo ${service_info}|cut -f2 -d',')"
+                service_executable="$(echo ${service_info}|cut -f3 -d',')"
+            # Al borrar un servicio no borramos su configuración, la renombramos
+            # De esta forma podemos volver a registrarlo indicando sólo su nombre
+            elif [[ -r ${services_data}/${nombre}.deleted ]]; then
                 service_info="$(cat ${services_data}/${nombre}.deleted)"
                 service_script="$(echo ${service_info}|cut -f1 -d',')"
                 pid_file="$(echo ${service_info}|cut -f2 -d',')"
@@ -109,6 +118,9 @@ case $1 in
             printf "ERROR %s\n\n" "Número de parámetros incorrecto"
             help
             exit 1
+        else
+            # Si el servicio está configurado y detenida su monitorización la reiniciamos
+            [[ -e ${services_data}/${nombre}.stop ]] && rm ${services_data}/${nombre}.stop
         fi
         ;;
     -bs|--borrar_servicio)
@@ -174,7 +186,8 @@ case ${comando} in
                 if [[ -z ${status_message} ]]; then
                     printf "\t- %s : %s (%s)\n" "${service}" "${status}" "${now}"
                     if [[ -w ${log_file} ]]; then
-                        log "Monitorización del servicio ${service}: ${status}"
+                        log_message="$(printf "${log_monitor_service_format}" ${service} "${status}")"
+                        log "${log_message}"
                     else
                         error_message="WARNING: No ha sido posible escribir en el log ${log_file} ¿problema de permisos?"
                     fi;
@@ -196,7 +209,9 @@ case ${comando} in
                 else
                     printf "\t- %s : %s (%s!) (%s)\n" "${service}" "${status}" "${status_message}" "${now}"
                     if [[ -w ${log_file} ]]; then
-                        log "Monitorización del servicio ${service}: ${status}"
+                        status="${status} - ${status_message}"
+                        log_message="$(printf "${log_monitor_service_format}" ${service} "${status}")"
+                        log "${log_message}"
                     else
                         error_message="WARNING: No ha sido posible escribir en el log ${log_file} ¿problema de permisos?"
                     fi;
@@ -240,10 +255,10 @@ case ${comando} in
             fi;
         fi;
 
-        if [[ -f ${services_data}/${nombre} ]]; then
-            printf "ERROR: %s\n\n" "El servicio ${nombre} ya ha sido registrado en gesappl"
-            exit 1
-        fi;
+        #if [[ -f ${services_data}/${nombre} ]]; then
+        #    printf "ERROR: %s\n\n" "El servicio ${nombre} ya ha sido registrado en gesappl"
+        #    exit 1
+        #fi;
 
         echo "${service_script},${pid_file},${service_executable}" > "${services_data}/${nombre}"
         rc=$?
