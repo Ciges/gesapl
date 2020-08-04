@@ -110,7 +110,47 @@ El informe consta de
 - Últimos 20 comandos ejecutados en GesApl, con sus parámetros, fecha y hora de ejecución y usuario que lo lanzó
 - Configuración registrada de cada servicio
 
+## Instrucciones de instalación y ejemplo de configuración y uso
 
+En el repositorio hay un .tar.gz que permite desplegar rápidamente la aplicación. 
 
+Los scripts han sido desarrollados y probados en un servidor **Linux Debian 10**. Para instalarlo y configurarlo en un servidor en el que, por ejemplo, tuviéramos corriendo tres servicios: Apache, MySQL y OpenSSH, haríamos lo siguiente:
 
+Como root, descargamos y descomprimimos el paquete gesapl.tar.gz  en `/`
 
+```bash
+cd /
+wget https://github.com/Ciges/gesapl/raw/master/gesapl.tar.gz
+tar -xzpvf gesapl.tar.gz
+```
+
+Si ejecutamos `gesapl -ls` obtendremos el mensaje:
+```
+Ningún servicio está siendo monitorizado por gesapl
+```
+
+Añadimos la monitorización de los tres servicios que tenemos en el sistema
+
+```bash
+gesapl --registrar_servicio apache apache2 /var/run/apache2/apache2.pid /usr/sbin/apache2
+gesapl --registrar_servicio mysql mysql /run/mysqld/mysqld.pid /usr/sbin/mysqld
+gesapl --registrar_servicio ssh ssh /var/run/sshd.pid /usr/sbin/sshd
+```
+
+Y arrancamos el demonio
+
+```bash
+gesapld start
+```
+
+A partir de aquí podríamos ver cómo están siendo monitorizados los servicios visualizando el log `/var/log/gesapld.log`, lanzar una monitorización con el comando
+
+```bash
+gesapl -ms
+```
+
+U obtener un informe completo del estado de la aplicación con
+
+```
+gesaplinfo
+```
