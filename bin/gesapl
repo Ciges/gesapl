@@ -35,7 +35,7 @@ Ejemplos:
 
 Monitorizar Apache y MySQL
     gesapl --registrar_servicio apache apache2 /var/run/apache2/apache2.pid /usr/sbin/apache2
-    gesapl --registrar_servicio mysql mysql /run/mysqld/mysql.pid /usr/sbin/mysqld
+    gesapl --registrar_servicio mysql mysql /run/mysqld/mysqld.pid /usr/sbin/mysqld
 
 Dejar de monitorizar MySQL
     gesapl --borrar_servicio mysql
@@ -193,18 +193,20 @@ case ${comando} in
                     fi;
 
                     # Si el servicio está caído mandar un email a los admins
-                    # Con este flag controlamos que sólo enviemos un email :-)
-                    mail_flag="${tmp_dir}/${service}.mailsent"
-                    if [[ ${status} == "KO" ]]; then
-                        if ! [[ -e ${mail_flag} ]]; then
-                            now="$(date +'%b %e %T')"
-                            for email in `echo $admin_emails|tr ',' ' '`; do
-                                printf "%s El servicio %s está caído (servidor %s)\n" "${now}" ${service} "$(hostname)"|mail -s "Servicio ${service} KO en el servidor $(hostname)" ${email}
-                            done;
-                            touch ${mail_flag}
+                    if which mail; then
+                        # Con este flag controlamos que sólo enviemos un email :-)
+                        mail_flag="${tmp_dir}/${service}.mailsent"
+                        if [[ ${status} == "KO" ]]; then
+                            if ! [[ -e ${mail_flag} ]]; then
+                                now="$(date +'%b %e %T')"
+                                for email in `echo $admin_emails|tr ',' ' '`; do
+                                    printf "%s El servicio %s está caído (servidor %s)\n" "${now}" ${service} "$(hostname)"|mail -s "Servicio ${service} KO en el servidor $(hostname)" ${email}
+                                done;
+                                touch ${mail_flag}
+                            fi;
+                        else
+                            [[ -e ${mail_flag} ]] && rm ${mail_flag}
                         fi;
-                    else
-                        [[ -e ${mail_flag} ]] && rm ${mail_flag}
                     fi;
                 else
                     printf "\t- %s : %s (%s!) (%s)\n" "${service}" "${status}" "${status_message}" "${now}"
@@ -217,18 +219,20 @@ case ${comando} in
                     fi;
 
                     # Si el servicio está caído mandar un email a los admins
-                    # Con este flag controlamos que sólo enviemos un email :-)
-                    mail_flag="${tmp_dir}/${service}.mailsent"
-                    if [[ ${status} == "KO" ]]; then
-                        if ! [[ -e ${mail_flag} ]]; then
-                            now="$(date +'%b %e %T')"
-                            for email in `echo $admin_emails|tr ',' ' '`; do
-                                printf "%s El servicio %s está caído (servidor %s, mensaje de estado \"%s\")\n" "${now}" ${service} "${status_message}" "$(hostname)"|mail -s "Servicio ${service} KO en el servidor $(hostname)" ${email}
-                            done;
-                            touch ${mail_flag}
+                    if which mail; then
+                        # Con este flag controlamos que sólo enviemos un email :-)
+                        mail_flag="${tmp_dir}/${service}.mailsent"
+                        if [[ ${status} == "KO" ]]; then
+                            if ! [[ -e ${mail_flag} ]]; then
+                                now="$(date +'%b %e %T')"
+                                for email in `echo $admin_emails|tr ',' ' '`; do
+                                    printf "%s El servicio %s está caído (servidor %s, mensaje de estado \"%s\")\n" "${now}" ${service} "${status_message}" "$(hostname)"|mail -s "Servicio ${service} KO en el servidor $(hostname)" ${email}
+                                done;
+                                touch ${mail_flag}
+                            fi;
+                        else
+                            [[ -e ${mail_flag} ]] && rm ${mail_flag}
                         fi;
-                    else
-                        [[ -e ${mail_flag} ]] && rm ${mail_flag}
                     fi;
                  fi;
             done;
@@ -302,7 +306,7 @@ case ${comando} in
                 printf "\t- %s\n" "${config}"
             done;
         else
-            printf "Ningún servicio está siendo monitorizado por gesapl"
+            printf "\nNingún servicio está siendo monitorizado por gesapl\n"
         fi;
         ;;
 

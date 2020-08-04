@@ -155,6 +155,10 @@ done;
 
 printf "\n"
 if [[ -n ${email} ]]; then
-    mail -s "Informe de uso de GesApl: ${now} (enviado desde $(hostname))" ${email} < ${fichero_salida}
-    printf "\nInforme enviado a la dirección de correo %s\n" ${email}
+    if which mail; then
+        mail -s "Informe de uso de GesApl: ${now} (enviado desde $(hostname))" ${email} < ${fichero_salida}
+        printf "\nInforme enviado a la dirección de correo %s\n" ${email}
+    else
+        printf "\nERROR: no se ha encontrado el comando mail, correo no enviado\n"
+    fi;
 fi;
