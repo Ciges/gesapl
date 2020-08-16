@@ -193,7 +193,7 @@ case ${comando} in
                     fi;
 
                     # Si el servicio está caído mandar un email a los admins
-                    if which mail; then
+                    if which mail > /dev/null; then
                         # Con este flag controlamos que sólo enviemos un email :-)
                         mail_flag="${tmp_dir}/${service}.mailsent"
                         if [[ ${status} == "KO" ]]; then
@@ -219,7 +219,7 @@ case ${comando} in
                     fi;
 
                     # Si el servicio está caído mandar un email a los admins
-                    if which mail; then
+                    if which mail > /dev/null; then
                         # Con este flag controlamos que sólo enviemos un email :-)
                         mail_flag="${tmp_dir}/${service}.mailsent"
                         if [[ ${status} == "KO" ]]; then
