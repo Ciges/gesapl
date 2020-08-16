@@ -1,0 +1,1 @@
+ssh,/var/run/sshd.pid,/usr/sbin/sshd
