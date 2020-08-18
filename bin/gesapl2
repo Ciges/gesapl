@@ -3,4 +3,12 @@ use strict;
 use warnings;
 
 # load some modules
-use Config::IniFiles;
+use lib '/usr/local/lib/gesapl';
+
+use Data::Dumper;
+use GesApl;
+
+# Start!
+my $gesapl = GesApl->new();
+
+print Dumper($gesapl->get_cfg());
