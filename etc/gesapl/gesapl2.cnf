@@ -13,7 +13,7 @@ services_data=/etc/gesapl/services
 tmp_dir=/tmp/gesapl
 
 ; aplication commands log file (writable by non root users)
-log_commands_file=/tmp/gesapl/gesapl_commands.log
+log_commands_file=/tmp/gesapl/gesapl2_commands.log
 
 [daemon]
 ; daemon binary
@@ -23,7 +23,7 @@ gesapld_bin=/usr/local/bin/gesapld2
 tmp_dir_gesapld=/var/run/gesapld
 
 ; pid file
-pid_gesapld=/var/run/gesapld/gesapld.pid
+pid_gesapld=/var/run/gesapld/gesapld2.pid
 
 ; daemon log
 log_file=/var/log/gesapld2.log
@@ -37,4 +37,4 @@ monitor_services="/usr/local/bin/gesapl2 -ms"
 monitor_interval=60
 
 ; flag to tell daemon to stop
-stop_flag=/var/run/gesapld/gesapld.stop
+stop_flag=/var/run/gesapld/gesapld2.stop
