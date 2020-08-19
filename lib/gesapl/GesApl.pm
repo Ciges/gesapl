@@ -5,7 +5,7 @@ use warnings;
 
 # Needed modules
 use Config::IniFiles;
-use File::Path qw(make_path remove_tree);
+use File::Path qw(mkpath);
 use File::Basename;
 
 use Data::Dumper;
@@ -67,30 +67,31 @@ sub _initialize {
     # Creation of temporary dir if it does not exists
     my $tmp_dir = $self->get_cfg( 'general', 'tmp_dir' );
     if ( not -d $tmp_dir ) {
-        make_path( $tmp_dir, { chmod => 0777 } )
+        mkpath($tmp_dir)
+            or die();
+        chmod 0777, $tmp_dir
             or die();
     }
 
-# Creation of empty daemon log file
-# The rights lets the log open as is not only the daemon who writes in it
-# TODO: Limit the rights in the log to be writeable only by the dameon and create a communication between client scripts and daemon
+    # Creation of empty daemon log file, writable by everyone
+    # TODO: Limit the rights in the log to be writeable only by the dameon and create a communication between client scripts and daemon
     my $daemon_log_file = $self->get_cfg( 'daemon', 'log_file' );
     if ( not -e $daemon_log_file and -w dirname($daemon_log_file) ) {
-        open LOG, ">>$daemon_log_file"
+        open my $log, '>>', "$daemon_log_file"
             or die();
+        close $log;
         chmod 0666, $daemon_log_file
             or die();
-        close LOG;
     }
 
     # Creation of commands log, to be writable by all the scripts
     my $log_commands_file = $self->get_cfg( 'general', 'log_commands_file' );
     if ( not -e $log_commands_file ) {
-        open LOG, ">>$log_commands_file"
+        open my $log, '>>', "$log_commands_file"
             or die();
+        close $log;
         chmod 0666, $log_commands_file
             or die();
-        close LOG;
     }
 
 }
