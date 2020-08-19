@@ -10,6 +10,11 @@ use File::Basename;
 
 use Data::Dumper;
 
+# Constants and default values
+use constant CFG_FILE => "/usr/local/etc/gesapl/gesapl2.cnf";
+
+# Module help
+
 =encoding utf8
 
 =head1 NOMBRE
@@ -30,9 +35,13 @@ GesApl es un módulo que permite monitorizar distintos servicios del sistema. Me
 =head2 get_cfg ( [ section ] , [ config_value ] )
 
 Devuelve los valores de configuración (leídos del archivo gesapl2.cnf).
-Si se le indica la sección y el nombre de la variable de configuración se devuelve su valor. En caso contrario se devuelve un array con todos los valores de configuración o los valores de la sección si se indica únicamente la sección.
+Si se le indica la sección y el nombre de la variable de configuración se devuelve su valor. 
+Sin parámetros  se devuelve un array con todos los valores de configuración
+Son un único parámetro se busca el valor en la seccion "general".
 
 =cut
+
+# Code
 
 # Init GesApl application
 sub new {
@@ -41,14 +50,7 @@ sub new {
     # This method is static
     die "class method invoked on object" if ref $class;
 
-    # Default values
-    my $cfg_file = "/usr/local/etc/gesapl/gesapl2.cnf";
-
-    # Load config values
-    my $cfg = Config::IniFiles->new( -file => $cfg_file )
-        or die;
-
-    my $self = bless { cfg => $cfg }, $class;
+    my $self = bless {}, $class;
 
     $self->_initialize();
     return $self;
@@ -58,14 +60,14 @@ sub _initialize {
     my $self = shift;
 
     # Creation of temporary dir under /var/run if we are root
-    my $tmp_dir_gesapld = $self->get_cfg( 'daemon', 'tmp_dir_gesapld' );
+    my $tmp_dir_gesapld = GesApl->get_cfg( 'daemon', 'tmp_dir_gesapld' );
     if ( $< == 0 and not -d $tmp_dir_gesapld ) {
         make_path($tmp_dir_gesapld)
             or die();
     }
 
     # Creation of temporary dir if it does not exists
-    my $tmp_dir = $self->get_cfg( 'general', 'tmp_dir' );
+    my $tmp_dir = GesApl->get_cfg( 'general', 'tmp_dir' );
     if ( not -d $tmp_dir ) {
         mkpath($tmp_dir)
             or die();
@@ -75,7 +77,7 @@ sub _initialize {
 
     # Creation of empty daemon log file, writable by everyone
     # TODO: Limit the rights in the log to be writeable only by the dameon and create a communication between client scripts and daemon
-    my $daemon_log_file = $self->get_cfg( 'daemon', 'log_file' );
+    my $daemon_log_file = GesApl->get_cfg( 'daemon', 'log_file' );
     if ( not -e $daemon_log_file and -w dirname($daemon_log_file) ) {
         open my $log, '>>', "$daemon_log_file"
             or die();
@@ -85,7 +87,7 @@ sub _initialize {
     }
 
     # Creation of commands log, to be writable by all the scripts
-    my $log_commands_file = $self->get_cfg( 'general', 'log_commands_file' );
+    my $log_commands_file = GesApl->get_cfg( 'general', 'log_commands_file' );
     if ( not -e $log_commands_file ) {
         open my $log, '>>', "$log_commands_file"
             or die();
@@ -96,19 +98,28 @@ sub _initialize {
 
 }
 
-# Get config values
+# Static function to get config values
 # Parameters: section and variable name of gesapl2.cnf
-# If no parameters are given then an array is returned with all the values. If only the section is given then the values for the section are returned.
+# If no parameters are given then an array is returned with all the values
+# If only one parameter is given then the value is searched in "general" section
 sub get_cfg {
-    my ( $self, $section, $config_value ) = @_;
+    my ( $class, $section, $config_value ) = @_;
+
+    # This method is static
+    die "class method invoked on object" if ref $class;
+
+    # Load config values
+    my $cfg = Config::IniFiles->new( -file => CFG_FILE )
+        or die;
+
     if ( defined $section and defined $config_value ) {
-        return $self->{cfg}->{v}->{$section}->{$config_value};
+        return $cfg->{v}->{$section}->{$config_value};
     }
     elsif ( defined $section ) {
-        return $self->{cfg}->{v}->{$section};
+        return $cfg->{v}->{$section};
     }
     else {
-        return $self->{cfg}->{v};
+        return $cfg->{v};
     }
 }
 
