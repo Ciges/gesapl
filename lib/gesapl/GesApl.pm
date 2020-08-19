@@ -13,36 +13,6 @@ use Data::Dumper;
 # Constants and default values
 use constant CFG_FILE => "/usr/local/etc/gesapl/gesapl2.cnf";
 
-# Module help
-
-=encoding utf8
-
-=head1 NOMBRE
-
-GesApl - Aplicación de monitorización de servicios
-
-=head1 SINOPSIS
-
-    use GesApl;
-    my $gesapl = GesApl->new();
-
-=head1 DESCRIPCION
-
-GesApl es un módulo que permite monitorizar distintos servicios del sistema. Mediante los métodos que proporciona se registran los servicios a monitorizar indicando el script de arranque en /etc/init.d, la ruta del fichero pid y el nombre del proceso ejecutable. Este módulo permite mantener este registro y verificar el estado de cada uno de los servicios 
-
-=head1 METODOS
-
-=head2 get_cfg ( [ section ] , [ config_value ] )
-
-Devuelve los valores de configuración (leídos del archivo gesapl2.cnf).
-Si se le indica la sección y el nombre de la variable de configuración se devuelve su valor. 
-Sin parámetros  se devuelve un array con todos los valores de configuración
-Son un único parámetro se busca el valor en la seccion "general".
-
-=cut
-
-# Code
-
 # Init GesApl application
 sub new {
     my ( $class, $args ) = @_;
@@ -124,3 +94,33 @@ sub get_cfg {
 }
 
 1;
+
+__END__
+
+# HELP
+
+=encoding utf8
+
+=head1 NOMBRE
+
+GesApl - Aplicación de monitorización de servicios
+
+=head1 SINOPSIS
+
+    use GesApl;
+    my $gesapl = GesApl->new();
+
+=head1 DESCRIPCION
+
+GesApl es un módulo que permite monitorizar distintos servicios del sistema. Mediante los métodos que proporciona se registran los servicios a monitorizar indicando el script de arranque en /etc/init.d, la ruta del fichero pid y el nombre del proceso ejecutable. Este módulo permite mantener este registro y verificar el estado de cada uno de los servicios 
+
+=head1 METODOS
+
+=head2 get_cfg ( [ section ] , [ config_value ] )
+
+Devuelve los valores de configuración (leídos del archivo gesapl2.cnf).
+Si se le indica la sección y el nombre de la variable de configuración se devuelve su valor. 
+Sin parámetros  se devuelve un array con todos los valores de configuración
+Son un único parámetro se busca el valor en la seccion "general".
+
+=cut

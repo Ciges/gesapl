@@ -52,6 +52,8 @@ help() if $help;
 
 __END__
 
+# HELP
+
 =encoding utf8
 
 =head1 NOMBRE
