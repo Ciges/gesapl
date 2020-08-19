@@ -32,10 +32,20 @@ sub help() {
 # Start!
 my $gesapl = GesApl->new();
 
-my $help = 0;
 
 # Parse script options
-GetOptions( 'ayuda|a|help|?' => \$help )
+my $help = 0;
+my $ms;
+my $rs;
+my $bs;
+my $ls;
+GetOptions( 
+        'ayuda|a|help|man|?' => \$help,
+        'monitorizar_servicios|ms' => \$ms,
+        'registrar_servicio|rs=s@' => \$rs,
+        'borrar_servicio|bs=s' => \$bs,
+        'listar_servicios|ls' => \$ls,
+    )
     or pod2usage( -exitval => 2, -verbose => 2 );
 
 help() if $help;
