@@ -10,7 +10,6 @@ use File::Basename;
 
 use Data::Dumper;
 
-
 =encoding utf8
 
 =head1 NOMBRE
@@ -35,24 +34,23 @@ Si se le indica la sección y el nombre de la variable de configuración se devu
 
 =cut
 
-
 # Init GesApl application
 sub new {
-	my ($class,$args) = @_;
+    my ( $class, $args ) = @_;
+
     # This method is static
     die "class method invoked on object" if ref $class;
 
-	# Default values
-	my $cfg_file = "/usr/local/etc/gesapl/gesapl2.cnf";
+    # Default values
+    my $cfg_file = "/usr/local/etc/gesapl/gesapl2.cnf";
 
-	# Load config values
-	my $cfg = Config::IniFiles->new( -file => $cfg_file )
-	   or die ;
+    # Load config values
+    my $cfg = Config::IniFiles->new( -file => $cfg_file )
+        or die;
 
-    my $self = bless { cfg => $cfg
-                    }, $class;
+    my $self = bless { cfg => $cfg }, $class;
 
-    $self->_initialize(); 
+    $self->_initialize();
     return $self;
 }
 
@@ -60,24 +58,24 @@ sub _initialize {
     my $self = shift;
 
     # Creation of temporary dir under /var/run if we are root
-    my $tmp_dir_gesapld = $self->get_cfg('daemon', 'tmp_dir_gesapld');
-    if ( $< == 0 and not -d $tmp_dir_gesapld )  {
+    my $tmp_dir_gesapld = $self->get_cfg( 'daemon', 'tmp_dir_gesapld' );
+    if ( $< == 0 and not -d $tmp_dir_gesapld ) {
         make_path($tmp_dir_gesapld)
             or die();
     }
 
     # Creation of temporary dir if it does not exists
-    my $tmp_dir = $self->get_cfg('general', 'tmp_dir');
-    if ( not -d $tmp_dir )  {
-        make_path($tmp_dir, { chmod => 0777 })
+    my $tmp_dir = $self->get_cfg( 'general', 'tmp_dir' );
+    if ( not -d $tmp_dir ) {
+        make_path( $tmp_dir, { chmod => 0777 } )
             or die();
     }
 
-    # Creation of empty daemon log file
-    # The rights lets the log open as is not only the daemon who writes in it
-    # TODO: Limit the rights in the log to be writeable only by the dameon and create a communication between client scripts and daemon
-    my $daemon_log_file = $self->get_cfg('daemon', 'log_file');
-    if ( not -e $daemon_log_file and -w dirname($daemon_log_file))  {
+# Creation of empty daemon log file
+# The rights lets the log open as is not only the daemon who writes in it
+# TODO: Limit the rights in the log to be writeable only by the dameon and create a communication between client scripts and daemon
+    my $daemon_log_file = $self->get_cfg( 'daemon', 'log_file' );
+    if ( not -e $daemon_log_file and -w dirname($daemon_log_file) ) {
         open LOG, ">>$daemon_log_file"
             or die();
         chmod 0666, $daemon_log_file
@@ -86,8 +84,8 @@ sub _initialize {
     }
 
     # Creation of commands log, to be writable by all the scripts
-    my $log_commands_file = $self->get_cfg('general', 'log_commands_file');
-    if ( not -e $log_commands_file )  {
+    my $log_commands_file = $self->get_cfg( 'general', 'log_commands_file' );
+    if ( not -e $log_commands_file ) {
         open LOG, ">>$log_commands_file"
             or die();
         chmod 0666, $log_commands_file
@@ -95,24 +93,22 @@ sub _initialize {
         close LOG;
     }
 
-
 }
-
 
 # Get config values
 # Parameters: section and variable name of gesapl2.cnf
 # If no parameters are given then an array is returned with all the values. If only the section is given then the values for the section are returned.
 sub get_cfg {
-	my ($self, $section, $config_value) = @_;
-	if (defined $section and defined $config_value) {
-		return $self->{cfg}->{v}->{$section}->{$config_value};	
-	}
-	elsif (defined $section) {
-		return $self->{cfg}->{v}->{$section};
-	}
-	else {
-		return $self->{cfg}->{v};
-	}
+    my ( $self, $section, $config_value ) = @_;
+    if ( defined $section and defined $config_value ) {
+        return $self->{cfg}->{v}->{$section}->{$config_value};
+    }
+    elsif ( defined $section ) {
+        return $self->{cfg}->{v}->{$section};
+    }
+    else {
+        return $self->{cfg}->{v};
+    }
 }
 
 1;
