@@ -1,13 +1,48 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-
-# load some modules
 use lib '/usr/local/lib/gesapl';
 
+# load some modules
 use Data::Dumper;
+use Getopt::Long;
+use Pod::Usage;
+
+# GesApl mmodules
 use GesApl;
 
 # Start!
 my $gesapl = GesApl->new();
 
+
+my $help = 0;
+
+GetOptions (
+    'ayuda|a|help|?' => \$help
+    ) or pod2usage(2);
+pod2usage(1) if $help;
+
+__END__
+
+=encoding utf8
+
+=head1 NOMBRE
+
+GesApl v2.00 - Aplicación de monitorización de servicios
+
+=head1 SINOPSIS
+
+gesapl2 orden parámetros
+
+Siendo orden una de las siguientes: --monitorizar_servicios (o -ms), --registrar_servicio (o -rs), --borrar_servicio (o -bs), --listar_servicios (o -ls), --ayuda (o -a)
+
+Ejemplos: 
+
+Monitorizar Apache y MySQL
+    gesapl --registrar_servicio apache apache2 /var/run/apache2/apache2.pid /usr/sbin/apache2
+    gesapl --registrar_servicio mysql mysql /run/mysqld/mysqld.pid /usr/sbin/mysqld
+
+Dejar de monitorizar MySQL
+    gesapl --borrar_servicio mysql
+
+=cut
