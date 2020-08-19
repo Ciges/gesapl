@@ -3,6 +3,9 @@
 [general]
 installation_dir=/usr/local
 
+; application description, shown in help text
+gesapl_description=GesApl v2.00 - Aplicación de monitorización de servicios
+
 ; list of administrators emails, separated by ,
 admin_emails=jmanuel.ciges@gmail.com,theangryjose@gmail.com
 
