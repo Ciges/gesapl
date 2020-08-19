@@ -11,4 +11,3 @@ use GesApl;
 # Start!
 my $gesapl = GesApl->new();
 
-print Dumper($gesapl->get_cfg());
