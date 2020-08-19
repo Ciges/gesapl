@@ -5,8 +5,11 @@ use warnings;
 
 # Needed modules
 use Config::IniFiles;
-use File::Path;
+use File::Path qw(make_path remove_tree);
+use File::Basename;
+
 use Data::Dumper;
+
 
 =encoding utf8
 
@@ -33,19 +36,18 @@ Si se le indica la sección y el nombre de la variable de configuración se devu
 =cut
 
 
-# TODO 
-# Use static functions
-
 # Init GesApl application
 sub new {
 	my ($class,$args) = @_;
+    # This method is static
+    die "class method invoked on object" if ref $class;
 
 	# Default values
 	my $cfg_file = "/usr/local/etc/gesapl/gesapl2.cnf";
 
 	# Load config values
 	my $cfg = Config::IniFiles->new( -file => $cfg_file )
-	   || die ;
+	   or die ;
 
     my $self = bless { cfg => $cfg
                     }, $class;
@@ -57,22 +59,42 @@ sub new {
 sub _initialize {
     my $self = shift;
 
-    # Creation of temporary dir if we are root
+    # Creation of temporary dir under /var/run if we are root
     my $tmp_dir_gesapld = $self->get_cfg('daemon', 'tmp_dir_gesapld');
     if ( $< == 0 and not -d $tmp_dir_gesapld )  {
         make_path($tmp_dir_gesapld)
-            || die();
+            or die();
     }
 
-    #TODO
+    # Creation of temporary dir if it does not exists
+    my $tmp_dir = $self->get_cfg('general', 'tmp_dir');
+    if ( not -d $tmp_dir )  {
+        make_path($tmp_dir, { chmod => 0777 })
+            or die();
+    }
 
-    # Creamos el directorio temporal si no existe
-    
-    # Creamos archivos log vacíos con los derechos adecuados si es necesario
-    # Log del demonio. Además del demonio también una monitorización lanzada manualmente será registrada
-    # Abrimos los permisos por tanto (TODO: Mejorar la gestión de los logs)
+    # Creation of empty daemon log file
+    # The rights lets the log open as is not only the daemon who writes in it
+    # TODO: Limit the rights in the log to be writeable only by the dameon and create a communication between client scripts and daemon
+    my $daemon_log_file = $self->get_cfg('daemon', 'log_file');
+    if ( not -e $daemon_log_file and -w dirname($daemon_log_file))  {
+        open LOG, ">>$daemon_log_file"
+            or die();
+        chmod 0666, $daemon_log_file
+            or die();
+        close LOG;
+    }
 
-    # Log de comandos, a usar por todos los scripts y a ejecutar por usuarios no root
+    # Creation of commands log, to be writable by all the scripts
+    my $log_commands_file = $self->get_cfg('general', 'log_commands_file');
+    if ( not -e $log_commands_file )  {
+        open LOG, ">>$log_commands_file"
+            or die();
+        chmod 0666, $log_commands_file
+            or die();
+        close LOG;
+    }
+
 
 }
 
