@@ -140,8 +140,6 @@ elsif (@rs) {
     &help("ERROR: Número de parámetros incorrecto", 2) if ( @rs != 1 and @rs != 4 );  
 
     my $service_name = $rs[0];
-    print Dumper($service_name);
-    print Dumper($gesapl->is_service_deleted($service_name));
     if ( @rs == 1 and not $gesapl->is_service_deleted($service_name) ) {
         &error_message("La configuración del servicio ".$service_name." no está en el registro", 3); 
     }
