@@ -14,19 +14,33 @@ use Pod::Select;
 use GesApl::App;
 
 # Print in standard output the following POD sections: SINOPSIS and USO and exits
+# Optional parameters: message, exit value
+# - If a message is passed as parameter, the message will be shown after GesApl description and only USO section will be shown
+# - As second parameter an exit value could be given
 sub help() {
+    my $message=shift;
+    my $exit_value=shift || 0;
+
     my $buffer;
     my $io     = IO::String->new($buffer);
     my $parser = Pod::Select->new();
-    $parser->select("SINOPSIS|USO");
-    $parser->parse_from_file( __FILE__, $io );
 
+    printf( "\n%s\n", GesApl::App->get_cfg( 'general', 'gesapl_description' ) );
+    if ($message) {
+        printf( "\n%s\n", $message);
+        $parser->select("USO");
+    }
+    else {
+        $parser->select("SINOPSIS|USO");
+    }
+    printf ("\n");
+    
+    $parser->parse_from_file( __FILE__, $io );
     $buffer =~ s/=head1\s*//g;
 
-    printf( "\n%s\n\n", GesApl::App->get_cfg( 'general', 'gesapl_description' ) );
     print $buffer;
 
-    exit 0;
+    exit $exit_value;
 }
 
 # Start!
@@ -34,11 +48,8 @@ my $gesapl = GesApl::App->new();
 
 
 # Parse script options
-my $help = 0;
-my $ms;
-my $rs;
-my $bs;
-my $ls;
+my ($help, $ms, $rs, $bs, $ls);
+
 GetOptions( 
         'ayuda|a|help|man|?' => \$help,
         'monitorizar_servicios|ms' => \$ms,
@@ -49,6 +60,15 @@ GetOptions(
     or pod2usage( -exitval => 2, -verbose => 2 );
 
 help() if $help;
+
+# Command: listar_servicios
+if ($ls) {
+    # Only one command is allowed
+    &help("ERROR: Parámetros incorrectos, se ha indicado más de un comando", 2) if ($ms or $rs or $bs);
+
+    # TODO: 
+}
+
 
 __END__
 
