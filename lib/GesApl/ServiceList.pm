@@ -60,6 +60,14 @@ sub list_services {
     return $self->{services};
 }
 
+# Returns true if a service with the name told is registered 
+sub is_service_registered {
+    my $self = shift;
+
+    my $service = GesApl::Service->new();
+    return $service->get_registered();
+}
+
 
 
 1;
@@ -103,5 +111,9 @@ Este módulo se encarga de gestionar el listado de servicios, permitiendo monito
 Devuelve una lista de instancias de GesApl::Service, una para cada servicio registrado. 
 
 La clase GesApl::Service permite realizar operaciones sobre el servicio (modificar sus parámetros, activar o desactivar su monitorización, mostrar información ...). La configuración se almacena en archivos de texto (en el directorio indicado en el valor de configuración 'services_data')
+
+=head2 is_service_registered( nombre )
+
+Indica si el servicio indicado existe o no en la configuración
 
 =cut
