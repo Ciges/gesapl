@@ -119,7 +119,7 @@ sub is_service_registered {
     return $service->is_registered();
 }
 
-# Returns true if a service with the name told is registered
+# Returns true if a service with the name told has been deleted but the configuration is still in the register
 sub is_service_deleted {
     my $self = shift;
 
