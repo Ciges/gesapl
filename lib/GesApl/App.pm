@@ -108,9 +108,37 @@ sub list_services {
     return $self->{_ServiceList}->list_services();
 }
 
+# Returns true if a service with the name told is registered 
+sub is_service_registered {
+    my $self = shift;
+
+    my $service = GesApl::Service->new();
+    return $service->get_registered();
+}
+
+
+# Remove a service from the configuration
+# Returns true if the service has been deleted or false if not (because the service is not registered!)
+sub unregister_service {
+    my $self = shift;
+
+    my $name = shift;
+    my $service = GesApl::Service->new($name);
+
+    if ($service->is_registered())  {
+        return $service->unregister();
+    }
+    else {
+        return 0;
+    }
+
+}
+
+
 # Register a service
-# Parameters are 4: service name, name of start/stop script under init.d, path of pid file and name of process
-# If the service has been deleted and only the name is given then old values are restored
+# Parameters could be:
+# - Four: service name, name of start/stop script under init.d, path of pid file and name of process
+# - Only one: if the service has been deleted and only the name is given then old values are restored
 sub register_service {
     my $self = shift;
 
@@ -151,5 +179,17 @@ Devuelve los valores de configuración (leídos del archivo gesapl2.cnf).
 Si se le indica la sección y el nombre de la variable de configuración se devuelve su valor. 
 Sin parámetros  se devuelve un array con todos los valores de configuración
 Son un único parámetro se busca el valor en la seccion "general".
+
+=head2 list_services()
+
+Devuelve una lista de instancias de GesApl::Service, una para cada servicio registrado. 
+
+=head2 is_service_registered( nombre )
+
+Indica si el servicio existe o no en la configuración
+
+=head2 unregister_service( nombre )
+
+Elimina la configuración del servicio
 
 =cut
