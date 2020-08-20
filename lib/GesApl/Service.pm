@@ -6,8 +6,6 @@ use warnings;
 # GesApl mmodules
 use GesApl::App;
 
-1;
-
 # Constructor
 sub new {
     my $class = shift;
@@ -96,6 +94,9 @@ sub get_configuration {
     return sprintf ("%s:  script de arranque=/etc/init.d/%s, fichero pid=%s, proceso=%s", $self->get_name(), $self->get_script(), $self->get_pid_file(), $self->get_process());
 }
 
+
+
+1;
 
 __END__
 
