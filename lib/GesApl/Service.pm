@@ -54,8 +54,26 @@ sub get_process {
     return $self->{_process};
 }
 
+sub get_registered {
+    my $self = shift;
+
+    return $self->{_registered};
+}
+# Alias for get_registered
+sub is_registered { 
+    my $self = shift;
+
+    return $self->get_registered();
+}
+
+# Returns if the service is active. 
+# The monitoring of a service can be stopped with gesapl2ctl command.
 sub get_active {
     my $self = shift;
+
+    # A flag in the config directory with the .stop suffix is saved in case the monitoring is stoppd
+    my $config_filename = GesApl::App->get_cfg('services_data')."/".$self->get_name();
+    $self->{active} = ! -e $config_filename.".stop" ? 1 : 0;
 
     return $self->{_active};
 }
@@ -68,22 +86,32 @@ sub load_config {
 
     # Load config from file
     my $config_filename = GesApl::App->get_cfg('services_data')."/".$service_name;
-    my $config_file;
-    open ($config_file, '<', $config_filename)
-        or die "Read of file $config_filename impossible: $!\n";
-    my $config = <$config_file>;
-    chomp ($config);
+    
+    if (-e $config_filename)    {
+        my $config_file;
+        open ($config_file, '<', $config_filename)
+            or die "Read of file $config_filename impossible: $!\n";
+        my $config = <$config_file>;
+        chomp ($config);
 
-    my @fields = split ",", $config;
-    $self->{_script} = $fields[0];
-    $self->{_pid_file} = $fields[1];
-    $self->{_process} = $fields[2];
-    close $config_file;
+        my @fields = split ",", $config;
+        $self->{_script} = $fields[0];
+        $self->{_pid_file} = $fields[1];
+        $self->{_process} = $fields[2];
+        close $config_file;
+
+        die "Error when readind config data from $config_filename: $!\n" if (not defined($self->{_script}) or not defined($self->{_pid_file}) or not defined($self->{_process}) );
+        $self->{_registered} = 1;
+    }
+    else {
+        # If the config files does not exist then the service is not yet registered
+        $self->{_registered} = 0;
+    }
 
     # Is the monitoring of the service stopped?
     $self->{_active} = not -e $config_filename.'.stop' ? 1 : 0;
 
-    die "Error when readind config data from $config_filename: $!\n" if (not defined($self->{_script}) or not defined($self->{_pid_file}) or not defined($self->{_process}) );
+
 
 }
 
@@ -91,7 +119,12 @@ sub load_config {
 sub get_config {
     my $self = shift;
 
-    return sprintf ("%s:  script de arranque=/etc/init.d/%s, fichero pid=%s, proceso=%s", $self->get_name(), $self->get_script(), $self->get_pid_file(), $self->get_process());
+    if ($self->is_registered())  {
+        return sprintf ("%s:  script de arranque=/etc/init.d/%s, fichero pid=%s, proceso=%s", $self->get_name(), $self->get_script(), $self->get_pid_file(), $self->get_process());
+    }
+    else {
+        return sprintf ("%s:  service NOT registered", $self->get_name());   
+    }
 }
 
 
