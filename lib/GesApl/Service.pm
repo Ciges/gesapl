@@ -3,6 +3,8 @@ package GesApl::Service;
 use strict;
 use warnings;
 
+# Needed modules
+use File::Copy;
 # GesApl mmodules
 use GesApl::App;
 
@@ -19,6 +21,8 @@ sub new {
     return $self;
 }
 
+# Private functions
+
 sub _initialize {
     my $self = shift;
 
@@ -28,6 +32,13 @@ sub _initialize {
         $self->load_config();
     }
 }
+
+sub _get_config_file_path {
+    my $self = shift;
+
+    GesApl::App->get_cfg('services_data')."/".$self->get_name();
+}
+
 
 # Getters
 sub get_name {
@@ -72,8 +83,7 @@ sub get_active {
     my $self = shift;
 
     # A flag in the config directory with the .stop suffix is saved in case the monitoring is stoppd
-    my $config_filename = GesApl::App->get_cfg('services_data')."/".$self->get_name();
-    $self->{active} = ! -e $config_filename.".stop" ? 1 : 0;
+    $self->{active} = ! -e $self->_get_config_file_path().".stop" ? 1 : 0;
 
     return $self->{_active};
 }
@@ -85,7 +95,7 @@ sub load_config {
     my $service_name = $self->get_name();
 
     # Load config from file
-    my $config_filename = GesApl::App->get_cfg('services_data')."/".$service_name;
+    my $config_filename = $self->_get_config_file_path();
     
     if (-e $config_filename)    {
         my $config_file;
@@ -100,7 +110,7 @@ sub load_config {
         $self->{_process} = $fields[2];
         close $config_file;
 
-        die "Error when readind config data from $config_filename: $!\n" if (not defined($self->{_script}) or not defined($self->{_pid_file}) or not defined($self->{_process}) );
+        die "Error when reading config data from $config_filename: $!\n" if (not defined($self->{_script}) or not defined($self->{_pid_file}) or not defined($self->{_process}) );
         $self->{_registered} = 1;
     }
     else {
@@ -125,6 +135,19 @@ sub get_config {
     else {
         return sprintf ("%s:  service NOT registered", $self->get_name());   
     }
+}
+
+# Remove service configuration
+sub unregister {
+    my $self = shift;
+
+    my $config_filename = $self->_get_config_file_path();
+    die "Error when reading config data from $config_filename: $!\n" if (not $self->is_registered());
+    
+    move($self->_get_config_file_path(), $self->_get_config_file_path().".deleted")
+        or die "Error when moving config file data from $config_filename to $config_filename.stop: $!\n";
+
+    return 1;
 }
 
 
@@ -177,5 +200,22 @@ Carga la configuración de nuevo desde el fichero correspondiente en /etc/gesapl
 =head2 get_config()
 
 Muestra la configuración registrada para el servicio en GesApl
+
+=head2 get_registered()
+
+Indica si existe una configuración almacenada para el servicio
+
+=head2 is_registered()
+
+Alias para get_registered()
+
+=head2 get_active()
+
+Indica si el la monitorización del servicio está activa
+
+=head2 unregister()
+
+Elimina la configuración del servicio
+
 
 =cut
