@@ -84,7 +84,7 @@ if ($ls) {
         }
     }
     else {
-        printf ("\nNingún servicio está siendo monitorizado por gesapl\n");
+        printf ("\nNo hay servicios registrado en gesapl\n");
     }
 
 }
