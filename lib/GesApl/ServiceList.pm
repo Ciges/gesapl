@@ -8,7 +8,7 @@ use warnings;
 # TODO: Delete when dev is finished
 use Data::Dumper;
 
-# GesApl mmodules
+# GesApl modules
 use GesApl::App;
 use GesApl::Service;
 

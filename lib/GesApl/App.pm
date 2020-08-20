@@ -8,7 +8,7 @@ use Config::IniFiles;
 use File::Path qw(mkpath);
 use File::Basename;
 
-# GesApl mmodules
+# GesApl modules
 use GesApl::ServiceList;
 use GesApl::Service;
 

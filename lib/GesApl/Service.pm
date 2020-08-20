@@ -6,7 +6,7 @@ use warnings;
 # Needed modules
 use File::Copy;
 
-# GesApl mmodules
+# GesApl modules
 use GesApl::App;
 
 # Constructor
@@ -233,8 +233,8 @@ sub register {
             return $self->load_config();
         }
         else {
-          # Configuration has not been updated and old data has not been found
-          # Here we do not should arrive :-|
+            # Configuration has not been updated and old data has not been found
+            # Here we do not should arrive :-|
             die
                 "Configuration service has not been updated and old data has not been found: $!\n";
         }

@@ -12,7 +12,7 @@ use Pod::Usage qw(pod2usage);
 use IO::String;
 use Pod::Select;
 
-# GesApl mmodules
+# GesApl modules
 use GesApl::App;
 
 # Constant and default values

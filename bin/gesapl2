@@ -7,7 +7,7 @@ use lib '/usr/local/lib';
 use Data::Dumper;
 use Getopt::Long qw(GetOptions);
 
-# GesApl mmodules
+# GesApl modules
 use GesApl::Common qw(help error_message info_message);
 use GesApl::App;
 use GesApl::Service;
@@ -113,11 +113,15 @@ elsif (@rs) {
         );
     }
     $gesapl->register_service(@rs)
-        or
-        &error_message( "el servicio ".$service_name." no se ha podido añadir al registro",
-        3 );
+        or &error_message(
+        "el servicio "
+            . $service_name
+            . " no se ha podido añadir al registro",
+        3
+        );
 
-    &info_message( "Configuración del servicio " . $service_name . " añadida\n" );
+    &info_message(
+        "Configuración del servicio " . $service_name . " añadida\n" );
 
 }
 
