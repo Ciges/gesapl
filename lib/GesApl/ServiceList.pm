@@ -3,6 +3,15 @@ package GesApl::ServiceList;
 use strict;
 use warnings;
 
+# Needed modules
+
+# TODO: Delete when dev is finished
+use Data::Dumper;
+
+# GesApl mmodules
+use GesApl::App;
+use GesApl::Service;
+
 # Constructor
 sub new {
     my $class = shift;
@@ -18,12 +27,40 @@ sub new {
 
 # Load current registered services
 sub _initialize {
+    my $self = shift;
 
+    $self->_reload_service_configs();
 }
 
+# Reload current registered services info
+sub _reload_service_configs {
+    my $self = shift;
+
+    $self->{services} = [];
+
+    # Load data from every file under /etc/gesapl/services
+    my $services_data_dir = GesApl::App->get_cfg('services_data');
+    opendir my $dir, $services_data_dir
+        or die ("Directory $services_data_dir does not exits or it's not readable $!\n");
+    my @services_data_files = readdir $dir;
+    closedir $dir;
+
+    foreach (@services_data_files) {
+        # Avoid file names with a .
+        push (@{ $self->{services} }, GesApl::Service->new($_)) if (index($_, '.') == -1);
+    }
+}
+
+
+# Reload current registered services info and return a list of GesApl::Service instances for each one
 sub list_services {
+    my $self = shift;
 
+    $self->_reload_service_configs();
+    return $self->{services};
 }
+
+
 
 1;
 
