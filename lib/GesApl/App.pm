@@ -1,4 +1,4 @@
-package GesApl;
+package GesApl::App;
 
 use strict;
 use warnings;
@@ -30,14 +30,14 @@ sub _initialize {
     my $self = shift;
 
     # Creation of temporary dir under /var/run if we are root
-    my $tmp_dir_gesapld = GesApl->get_cfg( 'daemon', 'tmp_dir_gesapld' );
+    my $tmp_dir_gesapld = GesApl::App->get_cfg( 'daemon', 'tmp_dir_gesapld' );
     if ( $< == 0 and not -d $tmp_dir_gesapld ) {
         make_path($tmp_dir_gesapld)
             or die();
     }
 
     # Creation of temporary dir if it does not exists
-    my $tmp_dir = GesApl->get_cfg( 'general', 'tmp_dir' );
+    my $tmp_dir = GesApl::App->get_cfg( 'general', 'tmp_dir' );
     if ( not -d $tmp_dir ) {
         mkpath($tmp_dir)
             or die();
@@ -47,7 +47,7 @@ sub _initialize {
 
     # Creation of empty daemon log file, writable by everyone
     # TODO: Limit the rights in the log to be writeable only by the dameon and create a communication between client scripts and daemon
-    my $daemon_log_file = GesApl->get_cfg( 'daemon', 'log_file' );
+    my $daemon_log_file = GesApl::App->get_cfg( 'daemon', 'log_file' );
     if ( not -e $daemon_log_file and -w dirname($daemon_log_file) ) {
         open my $log, '>>', "$daemon_log_file"
             or die();
@@ -57,7 +57,7 @@ sub _initialize {
     }
 
     # Creation of commands log, to be writable by all the scripts
-    my $log_commands_file = GesApl->get_cfg( 'general', 'log_commands_file' );
+    my $log_commands_file = GesApl::App->get_cfg( 'general', 'log_commands_file' );
     if ( not -e $log_commands_file ) {
         open my $log, '>>', "$log_commands_file"
             or die();
@@ -103,12 +103,12 @@ __END__
 
 =head1 NOMBRE
 
-GesApl - Aplicación de monitorización de servicios
+GesApl::App - Aplicación de monitorización de servicios
 
 =head1 SINOPSIS
 
-    use GesApl;
-    my $gesapl = GesApl->new();
+    use GesApl::App;
+    my $gesapl = GesApl::App->new();
 
 =head1 DESCRIPCION
 
