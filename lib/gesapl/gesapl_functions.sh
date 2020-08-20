@@ -2,10 +2,12 @@
 
 # Funciones comunes a varios scripts de GesApl
 
-# Graba el mensaje pasado como parámetro en en log, precedido de la fecha y hora
+# Graba el mensaje pasado como parámetro en el log del demonio, precedido de la fecha y hora
 function log {
     now="$(date +'%b %e %T')"
-    printf "%s %s\n" "${now}" "$1" >> ${log_file}
+    if [[ -w ${log_file} ]]; then
+        printf "%s %s\n" "${now}" "$1" >> ${log_file}
+    fi;
 }
 
 # Graba el mensaje pasado en el log de comandos, precedido de la fecha y hora y con el usuario que lo ejecuta a continuación
