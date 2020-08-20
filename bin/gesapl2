@@ -12,6 +12,7 @@ use Pod::Select;
 
 # GesApl mmodules
 use GesApl::App;
+use GesApl::Service;
 
 # Print in standard output the following POD sections: SINOPSIS and USO and exits
 # Optional parameters: message, exit value
@@ -66,7 +67,26 @@ if ($ls) {
     # Only one command is allowed
     &help("ERROR: Parámetros incorrectos, se ha indicado más de un comando", 2) if ($ms or $rs or $bs);
 
-    # TODO: 
+    printf( "\n%s\n", GesApl::App->get_cfg( 'general', 'gesapl_description' ) );    
+
+    # Get a list of GesApl::Service instances, one for each service registered
+    my $services = $gesapl->list_services();
+    if ( scalar @{$services} > 0 ) {
+        printf ("\nServicios monitorizados: ");
+        foreach (@{$services}) {
+            printf("%s ", $_->get_name()) if ($_->get_active() eq 1)
+        }
+        printf ("\n\n");
+
+        printf ("Configuración de los servicios:\n");
+        foreach (@{$services}) {
+            printf ("\t- %s\n", $_->get_configuration());
+        }
+    }
+    else {
+        printf ("\nNingún servicio está siendo monitorizado por gesapl\n");
+    }
+
 }
 
 
