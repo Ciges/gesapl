@@ -18,33 +18,49 @@ use GesApl::Service;
 # FUNCTIONS
 
 # Print in standard output the following POD sections: SINOPSIS and USO and exits
-# Optional parameters: message, exit value
+# Optional parameters: message, exit value, show_info
 # - If a message is passed as parameter, the message will be shown after GesApl description and only USO section will be shown
 # - As second parameter an exit value could be given
+# - If the third parameter is 0 then no info will be shown
 sub help() {
-    my $message=shift;
-    my $exit_value=shift || 0;
+    my $message = shift;
+    my $exit_value = shift || 0;
+    my $show_info = shift;
+    $show_info = 1 if (not defined $show_info);
 
-    my $buffer;
-    my $io     = IO::String->new($buffer);
-    my $parser = Pod::Select->new();
+    my ($buffer, $io, $parser);
+    if ($show_info == 1)  {
+        $io     = IO::String->new($buffer);
+        $parser = Pod::Select->new();
+    }
 
     printf( "\n%s\n", GesApl::App->get_cfg( 'general', 'gesapl_description' ) );
     if ($message) {
         printf( "\n%s\n", $message);
-        $parser->select("USO");
+        $parser->select("USO") if ($show_info == 1);
     }
     else {
-        $parser->select("SINOPSIS|USO");
+        $parser->select("SINOPSIS|USO") if ($show_info == 1);
     }
     printf ("\n");
-    
-    $parser->parse_from_file( __FILE__, $io );
-    $buffer =~ s/=head1\s*//g;
 
-    print $buffer;
+    if ($show_info == 1)  {
+        $parser->parse_from_file( __FILE__, $io );
+        $buffer =~ s/=head1\s*//g;
+
+        print $buffer;
+    }
+
 
     exit $exit_value;
+}
+
+# Alias for previous help() function with two paremeters message and exit_value
+# The message received will have the preffix ERROR: and no usage info will be shown
+sub error_message  {
+    my $message = shift;
+    my $exit_value = shift;
+    &help("ERROR: ".$message, $exit_value, 0);
 }
 
 # MAIN CODE
@@ -95,13 +111,27 @@ if ($ls) {
         printf ("\nNo hay servicios registrado en gesapl\n");
     }
 }
+elsif ($bs)  {
+    # Only one command is allowed
+    &help("ERROR: Parámetros incorrectos, se ha indicado más de un comando", 2) if ($ls or $ms or @rs);
+
+    if (not $gesapl->is_service_registered($bs))  {
+        &error_message("el servicio $bs no está registrado", 3);
+    }
+    else {
+        if (not $gesapl->unregister_service($bs))  {
+            &error_message("el servicio $bs no se ha podido eliminar del registro", 3);
+        }
+    }
+
+}
 # Command: --registrar_servicios | -rs
 elsif (@rs) {
     # Only one command is allowed
     &help("ERROR: Parámetros incorrectos, se ha indicado más de un comando", 2) if ($ls or $ms or $bs);
 
-    # DEBUG
-    $gesapl->register_service(@rs);
+
+
 }
 
 
