@@ -3,6 +3,29 @@ package GesApl::ServiceList;
 use strict;
 use warnings;
 
+# Constructor
+sub new {
+    my $class = shift;
+
+    # This method is static
+    die "class method invoked on object" if ref $class;
+
+    my $self = bless {}, $class;
+
+    $self->_initialize(@_);
+    return $self;
+}
+
+# Load current registered services
+sub _initialize {
+
+}
+
+sub list_services {
+
+}
+
+1;
 
 __END__
 
@@ -12,7 +35,7 @@ __END__
 
 =head1 NOMBRE
 
-GesApl::ServiceList - Modulo para la gestión de servicios de GesApl 2.00
+GesApl::ServiceList - Modulo para la gestión de servicios de GesApl 2.00 (con ficheros de texto)
 
 =head1 SINOPSIS
 
@@ -24,6 +47,11 @@ Este módulo, aunque puede ser usado directamente, está pensado para ser usado 
 
     # Obtenemos los servicios configurados
     my @services = $gesapl->list_services();
+
+    # Equivalente a 
+    my $servicelist = GesApl::ServiceList->new();
+    my @services = $servicelist->list_services();    
+
 
 =head1 DESCRIPCION
 
@@ -37,6 +65,6 @@ Este módulo se encarga de gestionar el listado de servicios, permitiendo monito
 
 Devuelve una lista de instancias de GesApl::Service, una para cada servicio registrado. 
 
-La clase GesApl::Service permite realizar operaciones sobre el servicio (modificar sus parámetros, activar o desactivar su monitorización, mostrar información ...)
+La clase GesApl::Service permite realizar operaciones sobre el servicio (modificar sus parámetros, activar o desactivar su monitorización, mostrar información ...). La configuración se almacena en archivos de texto (en el directorio indicado en el valor de configuración 'services_data')
 
 =cut
