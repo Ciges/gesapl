@@ -56,6 +56,12 @@ sub get_process {
     return $self->{_process};
 }
 
+sub get_active {
+    my $self = shift;
+
+    return $self->{_active};
+}
+
 # Load config from text file
 sub load_config {
     my $self = shift;
@@ -83,17 +89,13 @@ sub load_config {
 
 }
 
-# Print instance properties
-sub print {
+# Print service configuration
+sub get_configuration {
     my $self = shift;
 
-    printf "Nombre: %s\n", $self->get_name();
-    printf "Script start/stop: /etc/init.d/%s\n", $self->get_script();
-    printf "Fichero PID: %s\n", $self->get_pid_file();
-    printf "Nombre del proceso: %s\n", $self->get_process();
-    printf "Servicio monitorizado: %s\n", $self->{_active} ? "Sí" : "No";
-
+    return sprintf ("%s:  script de arranque=/etc/init.d/%s, fichero pid=%s, proceso=%s", $self->get_name(), $self->get_script(), $self->get_pid_file(), $self->get_process());
 }
+
 
 __END__
 
@@ -138,8 +140,8 @@ La configuración en el directorio indicado en el valor de configuración 'servi
 
 Carga la configuración de nuevo desde el fichero correspondiente en /etc/gesapl/services
 
-=head2 print()
+=head2 get_configuration()
 
-Muestra las propiedades de la instancia
+Muestra la configuración registrada para el servicio en GesApl
 
 =cut
