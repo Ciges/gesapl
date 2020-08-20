@@ -88,7 +88,7 @@ sub load_config {
 }
 
 # Print service configuration
-sub get_configuration {
+sub get_config {
     my $self = shift;
 
     return sprintf ("%s:  script de arranque=/etc/init.d/%s, fichero pid=%s, proceso=%s", $self->get_name(), $self->get_script(), $self->get_pid_file(), $self->get_process());
@@ -141,7 +141,7 @@ La configuración en el directorio indicado en el valor de configuración 'servi
 
 Carga la configuración de nuevo desde el fichero correspondiente en /etc/gesapl/services
 
-=head2 get_configuration()
+=head2 get_config()
 
 Muestra la configuración registrada para el servicio en GesApl
 

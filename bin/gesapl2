@@ -70,7 +70,7 @@ GetOptions(
 
 help() if $help;
 
-# Command: listar_servicios
+# Command: --listar_servicios | -ls
 if ($ls) {
     # Only one command is allowed
     &help("ERROR: Parámetros incorrectos, se ha indicado más de un comando", 2) if ($ms or $rs or $bs);
@@ -88,14 +88,14 @@ if ($ls) {
 
         printf ("Configuración de los servicios:\n");
         foreach (@{$services}) {
-            printf ("\t- %s\n", $_->get_configuration());
+            printf ("\t- %s\n", $_->get_config());
         }
     }
     else {
         printf ("\nNo hay servicios registrado en gesapl\n");
     }
-
 }
+
 
 
 __END__
