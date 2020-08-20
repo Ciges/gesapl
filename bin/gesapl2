@@ -68,7 +68,7 @@ GetOptions(
     )
     or pod2usage( -exitval => 2, -verbose => 2 );
 
-help() if $help;
+help() if $help or (not $ms and not @rs and not $bs and not $ls);
 
 # Command: --listar_servicios | -ls
 if ($ls) {
