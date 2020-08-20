@@ -57,12 +57,12 @@ my $gesapl = GesApl::App->new();
 
 
 # Parse script options
-my ($help, $ms, $rs, $bs, $ls);
+my ($help, $ms, @rs, $bs, $ls);
 
 GetOptions( 
         'ayuda|a|help|man|?' => \$help,
         'monitorizar_servicios|ms' => \$ms,
-        'registrar_servicio|rs=s@' => \$rs,
+        'registrar_servicio|rs=s@{1,4}' => \@rs,
         'borrar_servicio|bs=s' => \$bs,
         'listar_servicios|ls' => \$ls,
     )
@@ -73,7 +73,7 @@ help() if $help;
 # Command: --listar_servicios | -ls
 if ($ls) {
     # Only one command is allowed
-    &help("ERROR: Parámetros incorrectos, se ha indicado más de un comando", 2) if ($ms or $rs or $bs);
+    &help("ERROR: Parámetros incorrectos, se ha indicado más de un comando", 2) if ($ms or @rs or $bs);
 
     printf( "\n%s\n", DESCRIPTION );    
 
@@ -95,7 +95,14 @@ if ($ls) {
         printf ("\nNo hay servicios registrado en gesapl\n");
     }
 }
+# Command: --registrar_servicios | -rs
+elsif (@rs) {
+    # Only one command is allowed
+    &help("ERROR: Parámetros incorrectos, se ha indicado más de un comando", 2) if ($ls or $ms or $bs);
 
+    # DEBUG
+    $gesapl->register_service(@rs);
+}
 
 
 __END__
