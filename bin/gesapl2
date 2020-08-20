@@ -14,6 +14,8 @@ use Pod::Select;
 use GesApl::App;
 use GesApl::Service;
 
+# Constant and default values
+use constant DESCRIPTION => GesApl::App->get_cfg( 'general', 'gesapl_description' );
 
 # FUNCTIONS
 
@@ -34,7 +36,7 @@ sub help() {
         $parser = Pod::Select->new();
     }
 
-    printf( "\n%s\n", GesApl::App->get_cfg( 'general', 'gesapl_description' ) );
+    printf( "\n%s\n", DESCRIPTION );
     if ($message) {
         printf( "\n%s\n", $message);
         $parser->select("USO") if ($show_info == 1);
@@ -63,10 +65,12 @@ sub error_message  {
     &help("ERROR: ".$message, $exit_value, 0);
 }
 
-# MAIN CODE
+# Shows the application description and a informative message
+sub info_message {
+    printf( "\n%s\n\n%s\n", DESCRIPTION, shift );
+}
 
-# Constant and default values
-use constant DESCRIPTION => GesApl::App->get_cfg( 'general', 'gesapl_description' );
+# MAIN CODE
 
 # Start!
 my $gesapl = GesApl::App->new();
@@ -90,6 +94,8 @@ help() if $help or (not $ms and not @rs and not $bs and not $ls);
 if ($ls) {
     # Only one command is allowed
     &help("ERROR: Parámetros incorrectos, se ha indicado más de un comando", 2) if ($ms or @rs or $bs);
+    # No more parameters should be included
+    &help("ERROR: Número de parámetros incorrecto", 2) if (@ARGV > 0);    
 
     printf( "\n%s\n", DESCRIPTION );    
 
@@ -114,23 +120,35 @@ if ($ls) {
 elsif ($bs)  {
     # Only one command is allowed
     &help("ERROR: Parámetros incorrectos, se ha indicado más de un comando", 2) if ($ls or $ms or @rs);
+    # No more parameters should be included
+    &help("ERROR: Número de parámetros incorrecto", 2) if (@ARGV > 0);  
 
-    if (not $gesapl->is_service_registered($bs))  {
-        &error_message("el servicio $bs no está registrado", 3);
-    }
-    else {
-        if (not $gesapl->unregister_service($bs))  {
-            &error_message("el servicio $bs no se ha podido eliminar del registro", 3);
-        }
-    }
+    $gesapl->is_service_registered($bs)
+        or &error_message("el servicio $bs no está registrado", 3);
+
+    $gesapl->unregister_service($bs)
+        or &error_message("el servicio $bs no se ha podido eliminar del registro", 3);
+
+    &info_message("Configuración del servicio $bs eliminada\n");
 
 }
-# Command: --registrar_servicios | -rs
+# Command: --registrar_servicio | -rs
 elsif (@rs) {
     # Only one command is allowed
     &help("ERROR: Parámetros incorrectos, se ha indicado más de un comando", 2) if ($ls or $ms or $bs);
+    # Parameters allowed are service data (four) or only service name (one)
+    &help("ERROR: Número de parámetros incorrecto", 2) if ( @rs != 1 and @rs != 4 );  
 
+    my $service_name = $rs[0];
+    print Dumper($service_name);
+    print Dumper($gesapl->is_service_deleted($service_name));
+    if ( @rs == 1 and not $gesapl->is_service_deleted($service_name) ) {
+        &error_message("La configuración del servicio ".$service_name." no está en el registro", 3); 
+    }
+    $gesapl->register_service(@rs)
+        or &error_message("el servicio $bs no se ha podido añadir al registro", 3);
 
+    &info_message("Configuración del servicio ".$rs[0]." añadida\n");
 
 }
 

@@ -112,10 +112,21 @@ sub list_services {
 sub is_service_registered {
     my $self = shift;
 
-    my $service = GesApl::Service->new();
-    return $service->get_registered();
+    my $name = shift;
+
+    my $service = GesApl::Service->new($name);
+    return $service->is_registered();
 }
 
+# Returns true if a service with the name told is registered 
+sub is_service_deleted {
+    my $self = shift;
+
+    my $name = shift;
+
+    my $service = GesApl::Service->new($name);
+    return $service->is_deleted();
+}
 
 # Remove a service from the configuration
 # Returns true if the service has been deleted or false if not (because the service is not registered!)
@@ -139,12 +150,28 @@ sub unregister_service {
 # Parameters could be:
 # - Four: service name, name of start/stop script under init.d, path of pid file and name of process
 # - Only one: if the service has been deleted and only the name is given then old values are restored
+#
+# Returns an instace of GesApl::Service with the data loaded
 sub register_service {
     my $self = shift;
 
     my $name = shift;
+    my $service = GesApl::Service->new($name);
 
-    # TODO
+    # All the info for the service is given
+    if (@_ == 3) {
+        my ($script, $pidfile, $process) = @_;    
+        $service->set_script($script);
+        $service->set_pidfile($pidfile);
+        $service->set_process($process);
+        return $service->register();
+    }
+    elsif (@_ == 0) {
+        return $service->register();
+    }
+    else {
+        die ("Number of parameters for GesApl::App->register_service() incorrect\n");
+    }
 }
 
 
@@ -187,6 +214,10 @@ Devuelve una lista de instancias de GesApl::Service, una para cada servicio regi
 =head2 is_service_registered( nombre )
 
 Indica si el servicio existe o no en la configuración
+
+=head2 is_service_deleted( nombre )
+
+Indica si el servicio ha sido borrado del registro pero su configuración aún existe
 
 =head2 unregister_service( nombre )
 

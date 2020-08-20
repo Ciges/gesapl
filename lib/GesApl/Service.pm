@@ -53,10 +53,10 @@ sub get_script {
     return $self->{_script};
 }
 
-sub get_pid_file {
+sub get_pidfile {
     my $self = shift;
 
-    return $self->{_pid_file};
+    return $self->{_pidfile};
 }
 
 sub get_process {
@@ -68,13 +68,9 @@ sub get_process {
 sub get_registered {
     my $self = shift;
 
-    return $self->{_registered};
-}
-# Alias for get_registered
-sub is_registered { 
-    my $self = shift;
+    $self->{_registered} = -e $self->_get_config_file_path() ? 1 : 0;
 
-    return $self->get_registered();
+    return $self->{_registered};
 }
 
 # Returns if the service is active. 
@@ -83,12 +79,56 @@ sub get_active {
     my $self = shift;
 
     # A flag in the config directory with the .stop suffix is saved in case the monitoring is stoppd
-    $self->{active} = ! -e $self->_get_config_file_path().".stop" ? 1 : 0;
+    $self->{_active} = ! -e $self->_get_config_file_path().".stop" ? 1 : 0;
 
     return $self->{_active};
 }
 
+# Setters
+
+# Auxiliar function to update config file if we have all the elements
+# Return 1 if config has been saved and 0 if not
+sub _save_config {
+    my $self = shift;
+
+    if ($self->get_name() and $self->get_script() and $self->get_pidfile() and $self->get_process())  {
+        my $config_filename = $self->_get_config_file_path();
+        my $config_file;
+        open ($config_file, '>', $config_filename)
+            or die "Opening of file $config_filename to write impossible: $!\n";
+        print $config_file $self->get_script().",".$self->get_pidfile().",".$self->get_process();
+        close ($config_file);
+
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+sub set_script {
+    my $self = shift;
+    $self->{_script} = shift;
+
+    $self->_save_config();
+}
+
+sub set_pidfile {
+    my $self = shift;
+    $self->{_pidfile} = shift;
+
+    $self->_save_config();
+}
+
+sub set_process {
+    my $self = shift;
+    $self->{_process} = shift;
+
+    $self->_save_config();
+}
+
 # Load config from text file
+# Return 1 if config has been loaded and 0 if not (it could not exists)
 sub load_config {
     my $self = shift;
 
@@ -106,22 +146,16 @@ sub load_config {
 
         my @fields = split ",", $config;
         $self->{_script} = $fields[0];
-        $self->{_pid_file} = $fields[1];
+        $self->{_pidfile} = $fields[1];
         $self->{_process} = $fields[2];
         close $config_file;
+        return 1;
 
-        die "Error when reading config data from $config_filename: $!\n" if (not defined($self->{_script}) or not defined($self->{_pid_file}) or not defined($self->{_process}) );
-        $self->{_registered} = 1;
+        die "Error when reading config data from $config_filename: $!\n" if (not defined($self->{_script}) or not defined($self->{_pidfile}) or not defined($self->{_process}) );
     }
     else {
-        # If the config files does not exist then the service is not yet registered
-        $self->{_registered} = 0;
+        return 0;
     }
-
-    # Is the monitoring of the service stopped?
-    $self->{_active} = not -e $config_filename.'.stop' ? 1 : 0;
-
-
 
 }
 
@@ -130,11 +164,27 @@ sub get_config {
     my $self = shift;
 
     if ($self->is_registered())  {
-        return sprintf ("%s:  script de arranque=/etc/init.d/%s, fichero pid=%s, proceso=%s", $self->get_name(), $self->get_script(), $self->get_pid_file(), $self->get_process());
+        return sprintf ("%s:  script de arranque=/etc/init.d/%s, fichero pid=%s, proceso=%s", $self->get_name(), $self->get_script(), $self->get_pidfile(), $self->get_process());
     }
     else {
         return sprintf ("%s:  service NOT registered", $self->get_name());   
     }
+}
+
+# Returns true if the service configuration is in the register
+sub is_registered { 
+    my $self = shift;
+
+    return $self->get_registered();
+}
+
+# Returns true if the service configuration has been deleted but is still present in the register
+sub is_deleted {
+    my $self = shift;
+
+    $self->{_deleted} = -e $self->_get_config_file_path().".deleted" ? 1 : 0;
+
+    return $self->{_deleted};
 }
 
 # Remove service configuration
@@ -150,6 +200,30 @@ sub unregister {
     return 1;
 }
 
+# Adds the service configuration to the register
+# The data in the config file is overwriten with instance properties.
+# If only name has values and the service has been deleted then the info is recovered from the old configuration
+sub register {
+    my $self = shift;
+
+    my $config_filename = $self->_get_config_file_path();
+    if (not $self->_save_config()) {
+        if (-e $config_filename.".deleted")  {
+            move ($config_filename.".deleted", $config_filename)
+                or die "Error when moving config file data from $config_filename.deleted to $config_filename: $!\n";
+            return $self->load_config();
+        }
+        else {
+            # Configuration has not been updated and old data has not been found
+            # Here we do not should arrive :-|
+            die "Configuration service has not been updated and old data has not been found: $!\n";
+        }
+    }
+    else {
+        # Configuration has been updated
+        return 1;   
+    }
+}
 
 
 1;
@@ -189,7 +263,7 @@ La configuración en el directorio indicado en el valor de configuración 'servi
 
 =head2 get_script()
 
-=head2 get_pid_file()
+=head2 get_pidfile()
 
 =head2 get_process()
 
@@ -207,7 +281,11 @@ Indica si existe una configuración almacenada para el servicio
 
 =head2 is_registered()
 
-Alias para get_registered()
+Indica si existe una configuración almacenada para el servicio (alias the get_registered())
+
+=head2 is_deleted()
+
+Indica si la configuración del servicio ha sido borrada pero aún está en el registro
 
 =head2 get_active()
 
@@ -217,5 +295,10 @@ Indica si el la monitorización del servicio está activa
 
 Elimina la configuración del servicio
 
+=head2 register()
+
+Añade una configuŕación al registro
+
+Si sólo tiene valor la propiedad name y el servicio ha sido borrado, se recuperan los datos almacenados antes de haberlo borrado.
 
 =cut
