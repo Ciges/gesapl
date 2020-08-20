@@ -61,7 +61,8 @@ sub _initialize {
     }
 
     # Creation of commands log, to be writable by all the scripts
-    my $log_commands_file = GesApl::App->get_cfg( 'general', 'log_commands_file' );
+    my $log_commands_file
+        = GesApl::App->get_cfg( 'general', 'log_commands_file' );
     if ( not -e $log_commands_file ) {
         open my $log, '>>', "$log_commands_file"
             or die();
@@ -108,7 +109,7 @@ sub list_services {
     return $self->{_ServiceList}->list_services();
 }
 
-# Returns true if a service with the name told is registered 
+# Returns true if a service with the name told is registered
 sub is_service_registered {
     my $self = shift;
 
@@ -118,7 +119,7 @@ sub is_service_registered {
     return $service->is_registered();
 }
 
-# Returns true if a service with the name told is registered 
+# Returns true if a service with the name told is registered
 sub is_service_deleted {
     my $self = shift;
 
@@ -133,10 +134,10 @@ sub is_service_deleted {
 sub unregister_service {
     my $self = shift;
 
-    my $name = shift;
+    my $name    = shift;
     my $service = GesApl::Service->new($name);
 
-    if ($service->is_registered())  {
+    if ( $service->is_registered() ) {
         return $service->unregister();
     }
     else {
@@ -144,7 +145,6 @@ sub unregister_service {
     }
 
 }
-
 
 # Register a service
 # Parameters could be:
@@ -155,29 +155,27 @@ sub unregister_service {
 sub register_service {
     my $self = shift;
 
-    my $name = shift;
+    my $name    = shift;
     my $service = GesApl::Service->new($name);
 
     # All the info for the service is given
-    if (@_ == 3) {
-        my ($script, $pidfile, $process) = @_;    
+    if ( @_ == 3 ) {
+        my ( $script, $pidfile, $process ) = @_;
         $service->set_script($script);
         $service->set_pidfile($pidfile);
         $service->set_process($process);
         return $service->register();
     }
-    elsif (@_ == 0) {
+    elsif ( @_ == 0 ) {
         return $service->register();
     }
     else {
-        die ("Number of parameters for GesApl::App->register_service() incorrect\n");
+        die("Number of parameters for GesApl::App->register_service() incorrect\n"
+        );
     }
 }
 
-
-
 1;
-
 
 __END__
 

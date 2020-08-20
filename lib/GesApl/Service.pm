@@ -5,6 +5,7 @@ use warnings;
 
 # Needed modules
 use File::Copy;
+
 # GesApl mmodules
 use GesApl::App;
 
@@ -36,9 +37,8 @@ sub _initialize {
 sub _get_config_file_path {
     my $self = shift;
 
-    GesApl::App->get_cfg('services_data')."/".$self->get_name();
+    GesApl::App->get_cfg('services_data') . "/" . $self->get_name();
 }
-
 
 # Getters
 sub get_name {
@@ -73,13 +73,13 @@ sub get_registered {
     return $self->{_registered};
 }
 
-# Returns if the service is active. 
+# Returns if the service is active.
 # The monitoring of a service can be stopped with gesapl2ctl command.
 sub get_active {
     my $self = shift;
 
     # A flag in the config directory with the .stop suffix is saved in case the monitoring is stoppd
-    $self->{_active} = ! -e $self->_get_config_file_path().".stop" ? 1 : 0;
+    $self->{_active} = !-e $self->_get_config_file_path() . ".stop" ? 1 : 0;
 
     return $self->{_active};
 }
@@ -91,13 +91,20 @@ sub get_active {
 sub _save_config {
     my $self = shift;
 
-    if ($self->get_name() and $self->get_script() and $self->get_pidfile() and $self->get_process())  {
+    if (    $self->get_name()
+        and $self->get_script()
+        and $self->get_pidfile()
+        and $self->get_process() )
+    {
         my $config_filename = $self->_get_config_file_path();
         my $config_file;
-        open ($config_file, '>', $config_filename)
-            or die "Opening of file $config_filename to write impossible: $!\n";
-        print $config_file $self->get_script().",".$self->get_pidfile().",".$self->get_process();
-        close ($config_file);
+        open( $config_file, '>', $config_filename )
+            or die
+            "Opening of file $config_filename to write impossible: $!\n";
+        print $config_file $self->get_script() . ","
+            . $self->get_pidfile() . ","
+            . $self->get_process();
+        close($config_file);
 
         return 1;
     }
@@ -136,22 +143,25 @@ sub load_config {
 
     # Load config from file
     my $config_filename = $self->_get_config_file_path();
-    
-    if (-e $config_filename)    {
+
+    if ( -e $config_filename ) {
         my $config_file;
-        open ($config_file, '<', $config_filename)
+        open( $config_file, '<', $config_filename )
             or die "Read of file $config_filename impossible: $!\n";
         my $config = <$config_file>;
-        chomp ($config);
+        chomp($config);
 
         my @fields = split ",", $config;
-        $self->{_script} = $fields[0];
+        $self->{_script}  = $fields[0];
         $self->{_pidfile} = $fields[1];
         $self->{_process} = $fields[2];
         close $config_file;
         return 1;
 
-        die "Error when reading config data from $config_filename: $!\n" if (not defined($self->{_script}) or not defined($self->{_pidfile}) or not defined($self->{_process}) );
+        die "Error when reading config data from $config_filename: $!\n"
+            if ( not defined( $self->{_script} )
+            or not defined( $self->{_pidfile} )
+            or not defined( $self->{_process} ) );
     }
     else {
         return 0;
@@ -163,16 +173,20 @@ sub load_config {
 sub get_config {
     my $self = shift;
 
-    if ($self->is_registered())  {
-        return sprintf ("%s:  script de arranque=/etc/init.d/%s, fichero pid=%s, proceso=%s", $self->get_name(), $self->get_script(), $self->get_pidfile(), $self->get_process());
+    if ( $self->is_registered() ) {
+        return sprintf(
+            "%s:  script de arranque=/etc/init.d/%s, fichero pid=%s, proceso=%s",
+            $self->get_name(),    $self->get_script(),
+            $self->get_pidfile(), $self->get_process()
+        );
     }
     else {
-        return sprintf ("%s:  service NOT registered", $self->get_name());   
+        return sprintf( "%s:  service NOT registered", $self->get_name() );
     }
 }
 
 # Returns true if the service configuration is in the register
-sub is_registered { 
+sub is_registered {
     my $self = shift;
 
     return $self->get_registered();
@@ -182,7 +196,8 @@ sub is_registered {
 sub is_deleted {
     my $self = shift;
 
-    $self->{_deleted} = -e $self->_get_config_file_path().".deleted" ? 1 : 0;
+    $self->{_deleted}
+        = -e $self->_get_config_file_path() . ".deleted" ? 1 : 0;
 
     return $self->{_deleted};
 }
@@ -192,10 +207,13 @@ sub unregister {
     my $self = shift;
 
     my $config_filename = $self->_get_config_file_path();
-    die "Error when reading config data from $config_filename: $!\n" if (not $self->is_registered());
-    
-    move($self->_get_config_file_path(), $self->_get_config_file_path().".deleted")
-        or die "Error when moving config file data from $config_filename to $config_filename.stop: $!\n";
+    die "Error when reading config data from $config_filename: $!\n"
+        if ( not $self->is_registered() );
+
+    move( $self->_get_config_file_path(),
+        $self->_get_config_file_path() . ".deleted" )
+        or die
+        "Error when moving config file data from $config_filename to $config_filename.stop: $!\n";
 
     return 1;
 }
@@ -207,24 +225,25 @@ sub register {
     my $self = shift;
 
     my $config_filename = $self->_get_config_file_path();
-    if (not $self->_save_config()) {
-        if (-e $config_filename.".deleted")  {
-            move ($config_filename.".deleted", $config_filename)
-                or die "Error when moving config file data from $config_filename.deleted to $config_filename: $!\n";
+    if ( not $self->_save_config() ) {
+        if ( -e $config_filename . ".deleted" ) {
+            move( $config_filename . ".deleted", $config_filename )
+                or die
+                "Error when moving config file data from $config_filename.deleted to $config_filename: $!\n";
             return $self->load_config();
         }
         else {
-            # Configuration has not been updated and old data has not been found
-            # Here we do not should arrive :-|
-            die "Configuration service has not been updated and old data has not been found: $!\n";
+          # Configuration has not been updated and old data has not been found
+          # Here we do not should arrive :-|
+            die
+                "Configuration service has not been updated and old data has not been found: $!\n";
         }
     }
     else {
         # Configuration has been updated
-        return 1;   
+        return 1;
     }
 }
-
 
 1;
 

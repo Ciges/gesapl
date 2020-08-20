@@ -41,16 +41,19 @@ sub _reload_service_configs {
     # Load data from every file under /etc/gesapl/services
     my $services_data_dir = GesApl::App->get_cfg('services_data');
     opendir my $dir, $services_data_dir
-        or die ("Directory $services_data_dir does not exits or it's not readable $!\n");
+        or die(
+        "Directory $services_data_dir does not exits or it's not readable $!\n"
+        );
     my @services_data_files = sort readdir $dir;
     closedir $dir;
 
     foreach (@services_data_files) {
+
         # Avoid file names with a .
-        push (@{ $self->{services} }, GesApl::Service->new($_)) if (index($_, '.') == -1);
+        push( @{ $self->{services} }, GesApl::Service->new($_) )
+            if ( index( $_, '.' ) == -1 );
     }
 }
-
 
 # Reload current registered services info and return a list of GesApl::Service instances for each one
 sub list_services {
@@ -60,15 +63,13 @@ sub list_services {
     return $self->{services};
 }
 
-# Returns true if a service with the name told is registered 
+# Returns true if a service with the name told is registered
 sub is_service_registered {
     my $self = shift;
 
     my $service = GesApl::Service->new();
     return $service->get_registered();
 }
-
-
 
 1;
 
