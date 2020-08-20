@@ -10,6 +10,7 @@ use File::Basename;
 
 # GesApl mmodules
 use GesApl::ServiceList;
+use GesApl::Service;
 
 use Data::Dumper;
 
@@ -106,6 +107,19 @@ sub list_services {
 
     return $self->{_ServiceList}->list_services();
 }
+
+# Register a service
+# Parameters are 4: service name, name of start/stop script under init.d, path of pid file and name of process
+# If the service has been deleted and only the name is given then old values are restored
+sub register_service {
+    my $self = shift;
+
+    my $name = shift;
+
+    # TODO
+}
+
+
 
 1;
 
