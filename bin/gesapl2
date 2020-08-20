@@ -14,6 +14,9 @@ use Pod::Select;
 use GesApl::App;
 use GesApl::Service;
 
+
+# FUNCTIONS
+
 # Print in standard output the following POD sections: SINOPSIS and USO and exits
 # Optional parameters: message, exit value
 # - If a message is passed as parameter, the message will be shown after GesApl description and only USO section will be shown
@@ -44,6 +47,11 @@ sub help() {
     exit $exit_value;
 }
 
+# MAIN CODE
+
+# Constant and default values
+use constant DESCRIPTION => GesApl::App->get_cfg( 'general', 'gesapl_description' );
+
 # Start!
 my $gesapl = GesApl::App->new();
 
@@ -67,7 +75,7 @@ if ($ls) {
     # Only one command is allowed
     &help("ERROR: Parámetros incorrectos, se ha indicado más de un comando", 2) if ($ms or $rs or $bs);
 
-    printf( "\n%s\n", GesApl::App->get_cfg( 'general', 'gesapl_description' ) );    
+    printf( "\n%s\n", DESCRIPTION );    
 
     # Get a list of GesApl::Service instances, one for each service registered
     my $services = $gesapl->list_services();
