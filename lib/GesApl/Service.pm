@@ -76,6 +76,9 @@ sub load_config {
     $self->{_process} = $fields[2];
     close $config_file;
 
+    # Is the monitoring of the service stopped?
+    $self->{_active} = not -e $config_filename.'.stop' ? 1 : 0;
+
     die "Error when readind config data from $config_filename $!\n" if (not defined($self->{_script}) or not defined($self->{_pid_file}) or not defined($self->{_process}) );
 
 }
@@ -84,10 +87,12 @@ sub load_config {
 sub print {
     my $self = shift;
 
-    printf "Service name: %s\n", $self->get_name();
-    printf "Start/stop script name: /etc/init.d/%s\n", $self->get_script();
-    printf "Pid file: %s\n", $self->get_pid_file();
-    printf "Process name: %s\n", $self->get_process();
+    printf "Nombre: %s\n", $self->get_name();
+    printf "Script start/stop: /etc/init.d/%s\n", $self->get_script();
+    printf "Fichero PID: %s\n", $self->get_pid_file();
+    printf "Nombre del proceso: %s\n", $self->get_process();
+    printf "Servicio monitorizado: %s\n", $self->{_active} ? "Sí" : "No";
+
 }
 
 __END__
