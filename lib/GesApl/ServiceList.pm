@@ -42,7 +42,7 @@ sub _reload_service_configs {
     my $services_data_dir = GesApl::App->get_cfg('services_data');
     opendir my $dir, $services_data_dir
         or die ("Directory $services_data_dir does not exits or it's not readable $!\n");
-    my @services_data_files = readdir $dir;
+    my @services_data_files = sort readdir $dir;
     closedir $dir;
 
     foreach (@services_data_files) {
