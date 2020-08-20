@@ -70,7 +70,7 @@ sub load_config {
     my $config_filename = GesApl::App->get_cfg('services_data')."/".$service_name;
     my $config_file;
     open ($config_file, '<', $config_filename)
-        or die "Read of file $config_file impossible $!\n";
+        or die "Read of file $config_filename impossible: $!\n";
     my $config = <$config_file>;
     chomp ($config);
 
@@ -83,7 +83,7 @@ sub load_config {
     # Is the monitoring of the service stopped?
     $self->{_active} = not -e $config_filename.'.stop' ? 1 : 0;
 
-    die "Error when readind config data from $config_filename $!\n" if (not defined($self->{_script}) or not defined($self->{_pid_file}) or not defined($self->{_process}) );
+    die "Error when readind config data from $config_filename: $!\n" if (not defined($self->{_script}) or not defined($self->{_pid_file}) or not defined($self->{_process}) );
 
 }
 
