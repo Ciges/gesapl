@@ -138,4 +138,8 @@ La configuración en el directorio indicado en el valor de configuración 'servi
 
 Carga la configuración de nuevo desde el fichero correspondiente en /etc/gesapl/services
 
+=head2 print()
+
+Muestra las propiedades de la instancia
+
 =cut
