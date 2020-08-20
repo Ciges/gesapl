@@ -8,21 +8,24 @@ use Config::IniFiles;
 use File::Path qw(mkpath);
 use File::Basename;
 
+# GesApl mmodules
+use GesApl::ServiceList;
+
 use Data::Dumper;
 
 # Constants and default values
 use constant CFG_FILE => "/usr/local/etc/gesapl/gesapl2.cnf";
 
-# Init GesApl application
+# Constructor
 sub new {
-    my ( $class, $args ) = @_;
+    my $class = shift;
 
     # This method is static
     die "class method invoked on object" if ref $class;
 
     my $self = bless {}, $class;
 
-    $self->_initialize();
+    $self->_initialize(@_);
     return $self;
 }
 
@@ -66,6 +69,9 @@ sub _initialize {
             or die();
     }
 
+    # Add an instance of ServiceList
+    $self->{_ServiceList} = GesApl::ServiceList->new();
+
 }
 
 # Static function to get config values
@@ -86,14 +92,23 @@ sub get_cfg {
         return $cfg->{v}->{$section}->{$config_value};
     }
     elsif ( defined $section ) {
-        return $cfg->{v}->{$section};
+        $config_value = $section;
+        return $cfg->{v}->{'general'}->{$config_value};
     }
     else {
         return $cfg->{v};
     }
 }
 
+# Returns a list of GesApl::Service for each service configured
+sub list_services {
+    my $self = shift;
+
+    return $self->{_ServiceList}->list_services();
+}
+
 1;
+
 
 __END__
 
