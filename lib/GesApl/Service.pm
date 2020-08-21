@@ -5,6 +5,10 @@ use warnings;
 
 # Needed modules
 use File::Copy;
+use Proc::ProcessTable;
+
+# TODO: Delete when dev is finished
+use Data::Dumper;
 
 # GesApl modules
 use GesApl::App;
@@ -245,6 +249,30 @@ sub register {
     }
 }
 
+
+# Verify the status of the service
+# This functon checks de PID in the pid file and verifies if it corresponds to a service process
+# In case of error a text message is generated
+# If the service is active in the system a return value of 1 is returned, 0 if not
+# The results are saved in the instance properties {monitor}->{status} ("OK" or "NOOK"), {monitor}->{status_message} and {monitor}->{last_time} (date and time of last monitorization)
+sub monitor {
+    my $self = shift;
+
+    # Check the pid in the _pidfile
+    my $pidfilename = $self->get_pidfile();
+    if (-r $pidfilename) {
+        open my $pidfile, '<', $pidfilename;
+        my $pid = <$pidfile>;
+        close $pidfile;
+
+        print Dumper($pid);
+    }
+    # TODO else
+
+}
+
+
+
 1;
 
 __END__
@@ -319,5 +347,10 @@ Elimina la configuración del servicio
 Añade una configuŕación al registro
 
 Si sólo tiene valor la propiedad name y el servicio ha sido borrado, se recuperan los datos almacenados antes de haberlo borrado.
+
+=head2 monitor()
+
+Verifica el estado del servicio y devuelve 1 si el servicio está activo y 0 en caso contrario.
+El estado del servicio ("OK" o "NOOK"), un mensaje de error y la fecha y hora de ultima monitorización ejecutada serán almacenados en la propiedad {monitor} (array con diferentes propiedades).
 
 =cut

@@ -124,6 +124,22 @@ elsif (@rs) {
         "Configuración del servicio " . $service_name . " añadida\n" );
 
 }
+# Command: --monitorizar_servicios | -ms
+elsif ($ms) {
+
+    # Only one command is allowed
+    &help(
+        "ERROR: Parámetros incorrectos, se ha indicado más de un comando",
+        2 )
+        if ( $ls or $bs or @rs );
+
+    # No more parameters should be included
+    &help( "ERROR: Número de parámetros incorrecto", 2 ) if ( @ARGV > 0 );
+
+    $gesapl->monitor_services();
+
+}
+
 
 __END__
 

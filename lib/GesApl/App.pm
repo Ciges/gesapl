@@ -175,6 +175,14 @@ sub register_service {
     }
 }
 
+
+# Returns a list of GesApl::Service for each service configured with monitor properties updated
+sub monitor_services {
+    my $self = shift;
+
+    return $self->{_ServiceList}->monitor_services();
+}
+
 1;
 
 __END__

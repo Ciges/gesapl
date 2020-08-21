@@ -71,6 +71,21 @@ sub is_service_registered {
     return $service->get_registered();
 }
 
+
+# Reload current registered services info, monitor their status and return a list of GesApl::Service instances for each one
+sub monitor_services {
+    my $self = shift;
+
+    $self->_reload_service_configs();
+    # Monitor service status
+    foreach my $service (@{ $self->{services} })  {
+        $service->monitor();
+    }
+
+    return $self->{services};
+}
+
+
 1;
 
 __END__
@@ -111,7 +126,11 @@ Este módulo se encarga de gestionar el listado de servicios, permitiendo monito
 
 Devuelve una lista de instancias de GesApl::Service, una para cada servicio registrado. 
 
-La clase GesApl::Service permite realizar operaciones sobre el servicio (modificar sus parámetros, activar o desactivar su monitorización, mostrar información ...). La configuración se almacena en archivos de texto (en el directorio indicado en el valor de configuración 'services_data')
+=head2 monitor_services()
+
+Devuelve una lista de instancias de GesApl::Service, una para cada servicio registrado. 
+
+Hace lo mismo que list_services, pero ademan monitoriza el estado de cada uno de los servicios, registrando los resultado en el array {monitor} de la instancia.
 
 =head2 is_service_registered( nombre )
 
