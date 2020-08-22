@@ -124,6 +124,7 @@ elsif (@rs) {
         "Configuración del servicio " . $service_name . " añadida\n" );
 
 }
+
 # Command: --monitorizar_servicios | -ms
 elsif ($ms) {
 
@@ -136,10 +137,38 @@ elsif ($ms) {
     # No more parameters should be included
     &help( "ERROR: Número de parámetros incorrecto", 2 ) if ( @ARGV > 0 );
 
-    $gesapl->monitor_services();
+    printf( "\n%s\n\n", DESCRIPTION );
+
+    # Get a list of GesApl::Service instances, one for each service registered
+    my $services = $gesapl->monitor_services();
+    if ( scalar @{$services} > 0 ) {
+        printf("Monitorización de servicios:\n");
+        foreach ( @{$services} ) {
+            if ( $_->get_monitor_status_message() ) {
+                printf(
+                    "\t- %s : %s (%s) - WARNING: %s\n",
+                    $_->get_name(),
+                    $_->get_monitor_status() ? "OK" : "NOOK",
+                    $_->get_monitor_lasttime(),
+                    $_->get_monitor_status_message()
+                );
+            }
+            else {
+                printf(
+                    "\t- %s : %s (%s) \n",
+                    $_->get_name(),
+                    $_->get_monitor_status() ? "OK" : "NOOK",
+                    $_->get_monitor_lasttime()
+                );
+            }
+        }
+        printf "\n";
+    }
+    else {
+        printf("\nNo hay servicios registrados en gesapl\n");
+    }
 
 }
-
 
 __END__
 

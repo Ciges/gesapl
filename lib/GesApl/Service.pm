@@ -82,10 +82,28 @@ sub get_registered {
 sub get_active {
     my $self = shift;
 
-    # A flag in the config directory with the .stop suffix is saved in case the monitoring is stoppd
+# A flag in the config directory with the .stop suffix is saved in case the monitoring is stoppd
     $self->{_active} = !-e $self->_get_config_file_path() . ".stop" ? 1 : 0;
 
     return $self->{_active};
+}
+
+sub get_monitor_status {
+    my $self = shift;
+
+    return $self->{monitor}->{status};
+}
+
+sub get_monitor_status_message {
+    my $self = shift;
+
+    return $self->{monitor}->{status_message};
+}
+
+sub get_monitor_lasttime {
+    my $self = shift;
+
+    return $self->{monitor}->{lasttime};
 }
 
 # Setters
@@ -137,6 +155,33 @@ sub set_process {
 
     $self->_save_config();
 }
+
+sub _set_monitor_status {
+    my $self   = shift;
+    my $status = shift;
+
+    if ( lc $status eq "ok" ) {
+        $self->{monitor}->{status} = 1;
+    }
+    else {
+        $self->{monitor}->{status} = 0;
+    }
+
+}
+
+sub _set_monitor_status_message {
+    my $self = shift;
+
+    $self->{monitor}->{status_message} = shift;
+}
+
+sub _set_monitor_lasttime {
+    my $self = shift;
+
+    $self->{monitor}->{lasttime} = localtime;
+}
+
+# Methods
 
 # Load config from text file
 # Return 1 if config has been loaded and 0 if not (it could not exists)
@@ -237,8 +282,8 @@ sub register {
             return $self->load_config();
         }
         else {
-            # Configuration has not been updated and old data has not been found
-            # Here we do not should arrive :-|
+          # Configuration has not been updated and old data has not been found
+          # Here we do not should arrive :-|
             die
                 "Configuration service has not been updated and old data has not been found: $!\n";
         }
@@ -249,7 +294,6 @@ sub register {
     }
 }
 
-
 # Verify the status of the service
 # This functon checks de PID in the pid file and verifies if it corresponds to a service process
 # In case of error a text message is generated
@@ -258,20 +302,69 @@ sub register {
 sub monitor {
     my $self = shift;
 
+    # Default values
+    $self->_set_monitor_status("nook");
+    $self->_set_monitor_lasttime();
+
     # Check the pid in the _pidfile
     my $pidfilename = $self->get_pidfile();
-    if (-r $pidfilename) {
+    if ( -r $pidfilename ) {
         open my $pidfile, '<', $pidfilename;
         my $pid = <$pidfile>;
+        chomp($pid);
         close $pidfile;
 
-        print Dumper($pid);
+        my $t = Proc::ProcessTable->new;
+        foreach my $p ( @{ $t->table } ) {
+            if ( $p->pid == $pid ) {
+                if ( defined( @{ $p->cmdline }[0] )
+                    and @{ $p->cmdline }[0] =~ $self->get_process() )
+                {
+
+                    # The PID file is a server process
+                    $self->_set_monitor_status("ok");
+                }
+                else {
+                    # The PID file is a NOT server process!
+                    $self->_set_monitor_status_message(
+                        sprintf(
+                            "El proceso con PID %s existe pero no corresponde al servicio %s (debería ser %s)",
+                            $self->get_pidfile, $self->get_name(),
+                            $self->get_process
+                        )
+                    );
+                }
+            }
+        }
     }
-    # TODO else
+    else {
+        # The pid file is not readable
+        $self->_set_monitor_status_message(
+            sprintf( "El fichero PID %s no existe o no se puede leer",
+                $self->get_pidfile )
+        );
+
+        # Search the process by name
+        my $t = Proc::ProcessTable->new;
+        foreach my $p ( @{ $t->table } ) {
+            if ( defined( @{ $p->cmdline }[0] )
+                and @{ $p->cmdline }[0] =~ $self->get_process() )
+            {
+                # Service is there!
+                $self->_set_monitor_status("ok");
+                $self->_set_monitor_status_message(
+                    sprintf(
+                        "El servicio está arrancado pero el fichero PID %s no existe o no se puede leer",
+                        $self->get_pidfile )
+                );
+                last;
+            }
+        }
+    }
+
+    return $self->get_monitor_status();
 
 }
-
-
 
 1;
 
@@ -302,55 +395,95 @@ GesApl es una aplicación que permite monitorizar distintos servicios del sistem
 
 Este módulo se encarga de gestionar la configuración de un servicio dado, permitiendo registrar sus propiedades en archivos de texto y activar/desactivar su monitorización.
 
+Cada servicio se define por cuatro propiedades fundamentales:
+
+=over
+
+=item - nombre
+
+=item - nombre del script de arranque y parada en /etc/init.d
+
+=item - ruta del fichero pid
+
+=item - ruta del proceso en el sistema
+
+=back
+
 La configuración en el directorio indicado en el valor de configuración 'services_data')
 
 =head1 METODOS
 
-=head2 get_name()
+=head2 LECTURA DE PROPIEDADES
 
-=head2 get_script()
+=head3 get_name()
 
-=head2 get_pidfile()
+=head3 get_script()
 
-=head2 get_process()
+=head3 get_pidfile()
 
-=head2 load_config()
+=head3 get_process() 
 
-Carga la configuración de nuevo desde el fichero correspondiente en /etc/gesapl/services
 
-=head2 get_config()
+=head2 ESCRITURA DE PROPIEDADES
 
-Muestra la configuración registrada para el servicio en GesApl
+=head3 set_script()
 
-=head2 get_registered()
+=head3 set_pidfile()
+
+=head3 set_process()
+
+
+=head2 MÉTODOS
+
+=head3 new( nombre )
+
+Crea una instancia de GesApl::Service
+
+=head3 get_registered()
 
 Indica si existe una configuración almacenada para el servicio
 
-=head2 is_registered()
+=head3 is_registered()
 
 Indica si existe una configuración almacenada para el servicio (alias the get_registered())
 
-=head2 is_deleted()
+=head3 get_active()
+
+Indica si el servicio está siendo monitorizado
+
+=head3 get_monitor_status()
+
+Indica si el servicio está arrancado en el sistema
+
+=head3 get_monitor_status_message()
+
+Devuelve una cadena de texto con un mensaje de warning si se ha producido alguna incidencia en la monitorizaciñon
+
+=head3 get_monitor_lasttime()
+
+Devuelve un timestamp con la última fecha y hora de monitorización
+
+=head3 load_config()
+
+Carga la configuración de nuevo desde el fichero correspondiente en /etc/gesapl/services
+
+=head3 is_deleted()
 
 Indica si la configuración del servicio ha sido borrada pero aún está en el registro
 
-=head2 get_active()
-
-Indica si el la monitorización del servicio está activa
-
-=head2 unregister()
+=head3 unregister()
 
 Elimina la configuración del servicio
 
-=head2 register()
+=head3 register()
 
 Añade una configuŕación al registro
 
 Si sólo tiene valor la propiedad name y el servicio ha sido borrado, se recuperan los datos almacenados antes de haberlo borrado.
 
-=head2 monitor()
+=head3 monitor()
 
 Verifica el estado del servicio y devuelve 1 si el servicio está activo y 0 en caso contrario.
-El estado del servicio ("OK" o "NOOK"), un mensaje de error y la fecha y hora de ultima monitorización ejecutada serán almacenados en la propiedad {monitor} (array con diferentes propiedades).
+El estado del servicio ("OK" o "NOOK"), un mensaje de error y la fecha y hora de ultima monitorización ejecutada serán almacenados en propiedades de la instancia.
 
 =cut
