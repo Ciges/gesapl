@@ -156,23 +156,22 @@ sub register_service {
     my $self = shift;
 
     my $name    = shift;
-    my $service = GesApl::Service->new($name);
-
+    
+    my $service;
     # All the info for the service is given
     if ( @_ == 3 ) {
         my ( $script, $pidfile, $process ) = @_;
-        $service->set_script($script);
-        $service->set_pidfile($pidfile);
-        $service->set_process($process);
-        return $service->register();
+        $service = GesApl::Service->new($name, $script, $pidfile, $process);
     }
     elsif ( @_ == 0 ) {
-        return $service->register();
+        $service = GesApl::Service->new($name);
     }
     else {
         die("Number of parameters for GesApl::App->register_service() incorrect\n"
         );
     }
+
+    return $service->register();
 }
 
 

@@ -2,6 +2,7 @@ package GesApl::Service;
 
 use strict;
 use warnings;
+use feature 'say';
 
 # Needed modules
 use File::Copy;
@@ -14,6 +15,8 @@ use Data::Dumper;
 use GesApl::App;
 
 # Constructor
+# Service name is mandatory
+# Optionally we could get three more parameters:  start/stop script, pidfile and process
 sub new {
     my $class = shift;
 
@@ -31,11 +34,22 @@ sub new {
 sub _initialize {
     my $self = shift;
 
-    my $service_name = shift;
-    if ($service_name) {
+    if (@_ == 1)  {
+        my ($service_name) = @_;
         $self->{_name} = $service_name;
         $self->load_config();
     }
+    elsif (@_ == 4)  {
+        my ($service_name, $script, $pidfile, $process) = @_;
+        $self->{_name} = $service_name;
+        $self->set_script($script);
+        $self->set_pidfile($pidfile);
+        $self->set_process($process);
+    }
+    else {
+        die("Instance creation error, incorrect number of parameters\n");
+    }
+
 }
 
 sub _get_config_file_path {
@@ -435,9 +449,23 @@ La configuración en el directorio indicado en el valor de configuración 'servi
 
 =head2 MÉTODOS
 
-=head3 new( nombre )
+=head3 new( nombre [ script, pidfile, process ] )
 
-Crea una instancia de GesApl::Service
+Crea una instancia de GesApl::Service.
+
+Podemos pasarle el nombre únicamente o las cuatro propiedades que definen a un servicio:
+
+=over
+
+=item - nombre
+
+=item - nombre del script de arranque y parada en /etc/init.d
+
+=item - ruta del fichero pid
+
+=item - ruta del proceso en el sistema
+
+=back
 
 =head3 get_registered()
 
