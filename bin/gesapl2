@@ -1,0 +1,221 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use lib '/usr/local/lib';
+
+# load some modules
+use Data::Dumper;
+use Getopt::Long qw(GetOptions);
+
+# GesApl modules
+use GesApl::Common qw(help error_message info_message);
+use GesApl::App;
+use GesApl::Service;
+
+# Constant and default values
+use constant DESCRIPTION =>
+    GesApl::App->get_cfg( 'general', 'gesapl_description' );
+
+# MAIN CODE
+
+# Start!
+my $gesapl = GesApl::App->new();
+
+# Parse script options
+my ( $help, $ms, @rs, $bs, $ls );
+
+GetOptions(
+    'ayuda|a|help|man|?'            => \$help,
+    'monitorizar_servicios|ms'      => \$ms,
+    'registrar_servicio|rs=s@{1,4}' => \@rs,
+    'borrar_servicio|bs=s'          => \$bs,
+    'listar_servicios|ls'           => \$ls,
+) or &help( "ERROR: Orden desconocida", 2 );
+
+help() if $help or ( not $ms and not @rs and not $bs and not $ls );
+
+# Command: --listar_servicios | -ls
+if ($ls) {
+
+    # Only one command is allowed
+    &help(
+        "ERROR: Parámetros incorrectos, se ha indicado más de un comando",
+        2 )
+        if ( $ms or @rs or $bs );
+
+    # No more parameters should be included
+    &help( "ERROR: Número de parámetros incorrecto", 2 ) if ( @ARGV > 0 );
+
+    printf( "\n%s\n", DESCRIPTION );
+
+    # Get a list of GesApl::Service instances, one for each service registered
+    my $services = $gesapl->list_services();
+    if ( scalar @{$services} > 0 ) {
+        printf("\nServicios monitorizados: ");
+        foreach ( @{$services} ) {
+            printf( "%s ", $_->get_name() ) if ( $_->get_active() eq 1 );
+        }
+        printf("\n\n");
+
+        printf("Configuración de los servicios:\n");
+        foreach ( @{$services} ) {
+            printf( "\t- %s\n", $_->get_config() );
+        }
+    }
+    else {
+        printf("\nNo hay servicios registrados en gesapl\n");
+    }
+}
+
+# Command: --borrar_servicios | -bs
+elsif ($bs) {
+
+    # Only one command is allowed
+    &help(
+        "ERROR: Parámetros incorrectos, se ha indicado más de un comando",
+        2 )
+        if ( $ls or $ms or @rs );
+
+    # No more parameters should be included
+    &help( "ERROR: Número de parámetros incorrecto", 2 ) if ( @ARGV > 0 );
+
+    $gesapl->is_service_registered($bs)
+        or &error_message( "el servicio $bs no está registrado", 3 );
+
+    $gesapl->unregister_service($bs)
+        or &error_message(
+        "el servicio $bs no se ha podido eliminar del registro", 3 );
+
+    &info_message("Configuración del servicio $bs eliminada\n");
+
+}
+
+# Command: --registrar_servicio | -rs
+elsif (@rs) {
+
+    # Only one command is allowed
+    &help(
+        "ERROR: Parámetros incorrectos, se ha indicado más de un comando",
+        2 )
+        if ( $ls or $ms or $bs );
+
+    # Parameters allowed are service data (four) or only service name (one)
+    &help( "ERROR: Número de parámetros incorrecto", 2 )
+        if ( @rs != 1 and @rs != 4 );
+
+    my $service_name = $rs[0];
+    if ( @rs == 1 and not $gesapl->is_service_deleted($service_name) ) {
+        &error_message(
+            "La configuración del servicio "
+                . $service_name
+                . " no está en el registro",
+            3
+        );
+    }
+    $gesapl->register_service(@rs)
+        or &error_message(
+        "el servicio "
+            . $service_name
+            . " no se ha podido añadir al registro",
+        3
+        );
+
+    &info_message(
+        "Configuración del servicio " . $service_name . " añadida\n" );
+
+}
+
+# Command: --monitorizar_servicios | -ms
+elsif ($ms) {
+
+    # Only one command is allowed
+    &help(
+        "ERROR: Parámetros incorrectos, se ha indicado más de un comando",
+        2 )
+        if ( $ls or $bs or @rs );
+
+    # No more parameters should be included
+    &help( "ERROR: Número de parámetros incorrecto", 2 ) if ( @ARGV > 0 );
+
+    printf( "\n%s\n\n", DESCRIPTION );
+
+    # Get a list of GesApl::Service instances, one for each service registered
+    my $services = $gesapl->monitor_services();
+    if ( scalar @{$services} > 0 ) {
+        printf("Monitorización de servicios:\n");
+        foreach ( @{$services} ) {
+            if ( $_->get_monitor_status_message() ) {
+                printf(
+                    "\t- %s : %s (%s) - WARNING: %s\n",
+                    $_->get_name(),
+                    $_->get_monitor_status() ? "OK" : "NOOK",
+                    $_->get_monitor_lasttime(),
+                    $_->get_monitor_status_message()
+                );
+            }
+            else {
+                printf(
+                    "\t- %s : %s (%s) \n",
+                    $_->get_name(),
+                    $_->get_monitor_status() ? "OK" : "NOOK",
+                    $_->get_monitor_lasttime()
+                );
+            }
+        }
+        printf "\n";
+    }
+    else {
+        printf("\nNo hay servicios registrados en gesapl\n");
+    }
+
+}
+
+__END__
+
+# HELP
+
+=encoding utf8
+
+=head1 NOMBRE
+
+GesApl v2.00 - Aplicación de monitorización de servicios
+
+=head1 SINOPSIS
+
+gesapl2 orden parámetros
+
+Siendo orden una de las siguientes: --monitorizar_servicios (o -ms), --registrar_servicio (o -rs), --borrar_servicio (o -bs), --listar_servicios (o -ls), --ayuda (o -a)
+
+Ejemplos: 
+
+Monitorizar Apache y MySQL
+
+    gesapl --registrar_servicio apache apache2 /var/run/apache2/apache2.pid /usr/sbin/apache2
+    gesapl --registrar_servicio mysql mysql /run/mysqld/mysqld.pid /usr/sbin/mysqld
+
+Dejar de monitorizar MySQL
+
+    gesapl --borrar_servicio mysql
+
+=head1 USO
+
+gesapl2 orden parámetros
+
+    -ms | --monitorizar_servicios :  Monitoriza los servicios configurados
+
+    -rs | --registrar_servicio nombre script_de_arranque ruta_pid_file service_executable :  Registra un servicio e inicia su monitorización
+
+        El nombre de servicio es arbitrario, es el nombre con el que gesapl lo va a tratar
+        El script de arranque es el nombre del script de arranque/parada en /etc/init.d
+        El último parámetro es la ruta del binario con el que se le ve en la lista de procesos del sistema
+
+        Si el servicio ya ha sido configurado y no se desea cambiarla sólo se necesita el nombre
+
+    -bs | --borrar_servicio nombre :  Borra el servicio indicado
+
+    -ls | --listar_servicios :  Lista los servicios monitorizados y los parámetros registrados para cada uno
+
+    -a | --ayuda :  Muestra este mensaje explicativo
+
+
+=cut

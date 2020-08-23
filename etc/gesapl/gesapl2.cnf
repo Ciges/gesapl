@@ -1,0 +1,43 @@
+; General configuration for GesApl v2.00
+
+[general]
+installation_dir=/usr/local
+
+; application description, shown in help text
+gesapl_description=GesApl v2.00 - Aplicación de monitorización de servicios
+
+; list of administrators emails, separated by ,
+admin_emails=jmanuel.ciges@gmail.com,theangryjose@gmail.com
+
+; directory where service data will be saved
+services_data=/etc/gesapl/services
+
+; temporary dir (writable by non root users)
+tmp_dir=/tmp/gesapl
+
+; aplication commands log file (writable by non root users)
+log_commands_file=/tmp/gesapl/gesapl2_commands.log
+
+[daemon]
+; daemon binary
+gesapld_bin=/usr/local/bin/gesapld2
+
+; daemon temporary dir
+tmp_dir_gesapld=/var/run/gesapld
+
+; pid file
+pid_gesapld=/var/run/gesapld/gesapld2.pid
+
+; daemon log
+log_file=/var/log/gesapld2.log
+
+; Service monitor message format
+log_monitor_service_format="Monitorización del servicio %s: \n"
+
+; Command to run for service monitoring
+monitor_services="/usr/local/bin/gesapl2 -ms"
+; Pause between service monitoring
+monitor_interval=60
+
+; flag to tell daemon to stop
+stop_flag=/var/run/gesapld/gesapld2.stop
