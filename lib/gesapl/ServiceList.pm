@@ -12,7 +12,9 @@ use Data::Dumper;
 use GesApl::App;
 use GesApl::Service;
 
-# Constructor
+# CONSTRUCTOR
+
+# Load current registered services. No parameteres needed.
 sub new {
     my $class = shift;
 
@@ -71,20 +73,19 @@ sub is_service_registered {
     return $service->get_registered();
 }
 
-
 # Reload current registered services info, monitor their status and return a list of GesApl::Service instances for each one
 sub monitor_services {
     my $self = shift;
 
     $self->_reload_service_configs();
+
     # Monitor service status
-    foreach my $service (@{ $self->{services} })  {
+    foreach my $service ( @{ $self->{services} } ) {
         $service->monitor();
     }
 
     return $self->{services};
 }
-
 
 1;
 
@@ -97,6 +98,7 @@ __END__
 =head1 NOMBRE
 
 GesApl::ServiceList - Modulo para la gestión de servicios de GesApl 2.00 (con ficheros de texto)
+
 
 =head1 SINOPSIS
 
@@ -114,26 +116,39 @@ Este módulo, aunque puede ser usado directamente, está pensado para ser usado 
     my @services = $servicelist->list_services();    
 
 
-=head1 DESCRIPCION
+=head1 DESCRIPCIÓN
 
 GesApl es una aplicación que permite monitorizar distintos servicios del sistema.
 
-Este módulo se encarga de gestionar el listado de servicios, permitiendo monitorizar cada uno de los servicios configurados, registrar un nuevo servicio, borrar un servicio registrado o mostrar el listado de los servicios
+Este módulo se encarga de gestionar el listado de servicios, permitiendo hacer algunas operaciones sobre todos ellos con una sóla llamada (obtener un listado y lanzar la monitorización)
 
-=head1 METODOS
 
-=head2 list_services()
+=head1 MÉTODOS
+
+
+=head2 CONSTRUCTOR
+
+=head3 new()
+
+Carga los servicios configurados en GesApl y devuelve una instancia de GesApl::ServicesList.
+
+No tiene parámetros.
+
+
+=head2 OTROS MÉTODOS
+
+=head3 list_services()
 
 Devuelve una lista de instancias de GesApl::Service, una para cada servicio registrado. 
 
-=head2 monitor_services()
-
-Devuelve una lista de instancias de GesApl::Service, una para cada servicio registrado. 
-
-Hace lo mismo que list_services, pero ademan monitoriza el estado de cada uno de los servicios, registrando los resultado en el array {monitor} de la instancia.
-
-=head2 is_service_registered( nombre )
+=head3 is_service_registered( nombre )
 
 Indica si el servicio indicado existe o no en la configuración
+
+=head3 monitor_services()
+
+Devuelve una lista de instancias de GesApl::Service, una para cada servicio registrado. 
+
+Hace lo mismo que list_services, pero además monitoriza el estado de cada uno de los servicios, registrando los resultado en la instancia.
 
 =cut

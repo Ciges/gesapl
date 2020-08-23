@@ -17,7 +17,10 @@ use Data::Dumper;
 # Constants and default values
 use constant CFG_FILE => "/usr/local/etc/gesapl/gesapl2.cnf";
 
-# Constructor
+# CONSTRUCTOR
+
+# Read config files for the application and services and returns the an instance of GesApl::App.
+# Has no parameteres
 sub new {
     my $class = shift;
 
@@ -49,8 +52,8 @@ sub _initialize {
             or die();
     }
 
-    # Creation of empty daemon log file, writable by everyone
-    # TODO: Limit the rights in the log to be writeable only by the dameon and create a communication between client scripts and daemon
+# Creation of empty daemon log file, writable by everyone
+# TODO: Limit the rights in the log to be writeable only by the dameon and create a communication between client scripts and daemon
     my $daemon_log_file = GesApl::App->get_cfg( 'daemon', 'log_file' );
     if ( not -e $daemon_log_file and -w dirname($daemon_log_file) ) {
         open my $log, '>>', "$daemon_log_file"
@@ -155,13 +158,14 @@ sub unregister_service {
 sub register_service {
     my $self = shift;
 
-    my $name    = shift;
-    
+    my $name = shift;
+
     my $service;
+
     # All the info for the service is given
     if ( @_ == 3 ) {
         my ( $script, $pidfile, $process ) = @_;
-        $service = GesApl::Service->new($name, $script, $pidfile, $process);
+        $service = GesApl::Service->new( $name, $script, $pidfile, $process );
     }
     elsif ( @_ == 0 ) {
         $service = GesApl::Service->new($name);
@@ -173,7 +177,6 @@ sub register_service {
 
     return $service->register();
 }
-
 
 # Returns a list of GesApl::Service for each service configured with monitor properties updated
 sub monitor_services {
@@ -203,29 +206,56 @@ GesApl::App - Aplicación de monitorización de servicios
 
 GesApl es un módulo que permite monitorizar distintos servicios del sistema. Mediante los métodos que proporciona se registran los servicios a monitorizar indicando el script de arranque en /etc/init.d, la ruta del fichero pid y el nombre del proceso ejecutable. Este módulo permite mantener este registro y verificar el estado de cada uno de los servicios 
 
-=head1 METODOS
 
-=head2 get_cfg ( [ section ] , [ config_value ] )
+=head1 MÉTODOS
+
+
+=head2 CONSTRUCTOR
+
+=head3 new()
+
+Carga la configuración de la aplicación y de los servicios regisrtados y devuelve una instancia de GesApl::App.
+
+No tiene parámetros.
+
+
+=head2 MÉTODOS
+
+
+=head3 get_cfg( [ section ] , [ config_value ] )
 
 Devuelve los valores de configuración (leídos del archivo gesapl2.cnf).
 Si se le indica la sección y el nombre de la variable de configuración se devuelve su valor. 
 Sin parámetros  se devuelve un array con todos los valores de configuración
 Son un único parámetro se busca el valor en la seccion "general".
 
-=head2 list_services()
+=head3 list_services()
 
 Devuelve una lista de instancias de GesApl::Service, una para cada servicio registrado. 
 
-=head2 is_service_registered( nombre )
+=head3 is_service_registered( nombre )
 
 Indica si el servicio existe o no en la configuración
 
-=head2 is_service_deleted( nombre )
+=head3 is_service_deleted( nombre )
 
 Indica si el servicio ha sido borrado del registro pero su configuración aún existe
 
-=head2 unregister_service( nombre )
+=head3 unregister_service( nombre )
 
 Elimina la configuración del servicio
+
+=head3 register_service( nombre [, script, fichero_pid, proceso ] )
+
+Registra un servicio en la aplicación.
+Admite 1 ó 4 parámetros:
+
+=over
+
+=item - Si sólo se le pasa el nombre y la configuración está presente (el servicio se ha borrado y se quiere restaurar) se recuperan los datos y se registra
+
+=item - Si se pasa nombre, ruta del script de arranque y parada en /etc/init.d, ruta del fichero pid y nombre del proceso un nuevo servicio se registra en la aplicación
+
+=back
 
 =cut

@@ -86,6 +86,7 @@ __END__
 
 GesApl::Common - Variables y funciones comunes a los distintios scripts de GesApl
 
+
 =head1 SINOPSIS
 
     use GesApl::Common qw(help error_message info_message);
@@ -98,7 +99,8 @@ GesApl::Common - Variables y funciones comunes a los distintios scripts de GesAp
         or &error_message( "el servicio ".$service_name." no se ha podido añadir al registro", 3 );
     &info_message("Configuración del servicio eliminada\n");
 
-=head1 DESCRIPCION
+
+=head1 DESCRIPCIÓN
 
 GesApl es una aplicación que permite monitorizar distintos servicios del sistema. 
 
@@ -106,7 +108,8 @@ En este módulo se incluyen métodos para mostrar la ayuda del script (obtenida 
 
 Las funciones se exportan con lo que se pueden usar directamente, sin prefijo alguno.
 
-=head1 METODOS
+
+=head1 MÉTODOS
 
 =head2 help( [ message, exit value, show_info ] )
 

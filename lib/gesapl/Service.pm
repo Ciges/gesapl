@@ -14,7 +14,8 @@ use Data::Dumper;
 # GesApl modules
 use GesApl::App;
 
-# Constructor
+# CONSTRUCTOR
+
 # Service name is mandatory
 # Optionally we could get three more parameters:  start/stop script, pidfile and process
 sub new {
@@ -34,13 +35,13 @@ sub new {
 sub _initialize {
     my $self = shift;
 
-    if (@_ == 1)  {
+    if ( @_ == 1 ) {
         my ($service_name) = @_;
         $self->{_name} = $service_name;
         $self->load_config();
     }
-    elsif (@_ == 4)  {
-        my ($service_name, $script, $pidfile, $process) = @_;
+    elsif ( @_ == 4 ) {
+        my ( $service_name, $script, $pidfile, $process ) = @_;
         $self->{_name} = $service_name;
         $self->set_script($script);
         $self->set_pidfile($pidfile);
@@ -58,7 +59,7 @@ sub _get_config_file_path {
     GesApl::App->get_cfg('services_data') . "/" . $self->get_name();
 }
 
-# Getters
+# GETTER FUNCTIONS
 sub get_name {
     my $self = shift;
 
@@ -83,46 +84,9 @@ sub get_process {
     return $self->{_process};
 }
 
-sub get_registered {
-    my $self = shift;
+# SETTER FUNCTIONS
 
-    $self->{_registered} = -e $self->_get_config_file_path() ? 1 : 0;
-
-    return $self->{_registered};
-}
-
-# Returns if the service is active.
-# The monitoring of a service can be stopped with gesapl2ctl command.
-sub get_active {
-    my $self = shift;
-
-# A flag in the config directory with the .stop suffix is saved in case the monitoring is stoppd
-    $self->{_active} = !-e $self->_get_config_file_path() . ".stop" ? 1 : 0;
-
-    return $self->{_active};
-}
-
-sub get_monitor_status {
-    my $self = shift;
-
-    return $self->{monitor}->{status};
-}
-
-sub get_monitor_status_message {
-    my $self = shift;
-
-    return $self->{monitor}->{status_message};
-}
-
-sub get_monitor_lasttime {
-    my $self = shift;
-
-    return $self->{monitor}->{lasttime};
-}
-
-# Setters
-
-# Auxiliar function to update config file if we have all the elements
+# Auxiliar private function to update config file if we have all the elements
 # Return 1 if config has been saved and 0 if not
 sub _save_config {
     my $self = shift;
@@ -170,34 +134,58 @@ sub set_process {
     $self->_save_config();
 }
 
-sub _set_monitor_status {
-    my $self   = shift;
-    my $status = shift;
+# FUNCTIONS
 
-    if ( lc $status eq "ok" ) {
-        $self->{monitor}->{status} = 1;
-    }
-    else {
-        $self->{monitor}->{status} = 0;
-    }
-
-}
-
-sub _set_monitor_status_message {
+# Returns 1 if there is a configuration registered for the service
+sub get_registered {
     my $self = shift;
 
-    $self->{monitor}->{status_message} = shift;
+    $self->{_registered} = -e $self->_get_config_file_path() ? 1 : 0;
+
+    return $self->{_registered};
 }
 
-sub _set_monitor_lasttime {
+# Alias for get_registered(), returns 1 if there is a configuration registered for the service
+sub is_registered {
     my $self = shift;
 
-    $self->{monitor}->{lasttime} = localtime;
+    return $self->get_registered();
 }
 
-# Methods
+# Returns if the service is active.
+# The monitoring of a service can be stopped with gesapl2ctl command.
+sub get_active {
+    my $self = shift;
 
-# Load config from text file
+    # A flag in the config directory with the .stop suffix is saved in case the monitoring is stoppd
+    $self->{_active} = !-e $self->_get_config_file_path() . ".stop" ? 1 : 0;
+
+    return $self->{_active};
+}
+
+# Returns 1 if the service is running in the system, 0 if not
+sub get_monitor_status {
+    my $self = shift;
+
+    return $self->{monitor}->{status};
+}
+
+# Returns a text string with a warning message from the last service monitoring (if there is one)
+sub get_monitor_status_message {
+    my $self = shift;
+
+    return $self->{monitor}->{status_message};
+}
+
+# Returns a text string with the date and time of last service monitoring
+# TODO: Save and load a timestamp, not the string
+sub get_monitor_lasttime {
+    my $self = shift;
+
+    return $self->{monitor}->{lasttime};
+}
+
+# Reload config from text file and update instance properties
 # Return 1 if config has been loaded and 0 if not (it could not exists)
 sub load_config {
     my $self = shift;
@@ -232,7 +220,7 @@ sub load_config {
 
 }
 
-# Print service configuration
+# Print in standard output service configuration (for debugging purposes)
 sub get_config {
     my $self = shift;
 
@@ -246,13 +234,6 @@ sub get_config {
     else {
         return sprintf( "%s:  service NOT registered", $self->get_name() );
     }
-}
-
-# Returns true if the service configuration is in the register
-sub is_registered {
-    my $self = shift;
-
-    return $self->get_registered();
 }
 
 # Returns true if the service configuration has been deleted but is still present in the register
@@ -296,8 +277,8 @@ sub register {
             return $self->load_config();
         }
         else {
-          # Configuration has not been updated and old data has not been found
-          # Here we do not should arrive :-|
+            # Configuration has not been updated and old data has not been found
+            # Here we do not should arrive :-|
             die
                 "Configuration service has not been updated and old data has not been found: $!\n";
         }
@@ -306,6 +287,37 @@ sub register {
         # Configuration has been updated
         return 1;
     }
+}
+
+# Private function to set service status (it it's running)
+# A parameter string of "OK" set it to 1, else to 0
+sub _set_monitor_status {
+    my $self   = shift;
+    my $status = shift;
+
+    if ( lc $status eq "ok" ) {
+        $self->{monitor}->{status} = 1;
+    }
+    else {
+        $self->{monitor}->{status} = 0;
+    }
+
+}
+
+# Private function to set monitor status message,
+# Parameter is a text string with a warning message from the last service monitoring (if there is one)
+sub _set_monitor_status_message {
+    my $self = shift;
+
+    $self->{monitor}->{status_message} = shift;
+}
+
+# Private function to set date and time of last service monitoring
+# No parameter is given, current date and time is saved
+sub _set_monitor_lasttime {
+    my $self = shift;
+
+    $self->{monitor}->{lasttime} = localtime;
 }
 
 # Verify the status of the service
@@ -392,6 +404,7 @@ __END__
 
 GesApl::Service - Modulo para gestionar la configuración de un servicio registrado en GesApl 2.00 (con ficheros de texto)
 
+
 =head1 SINOPSIS
 
 Este módulo, aunque puede ser usado directamente, está pensado para ser usado por la aplicación GesApl. 
@@ -403,7 +416,8 @@ Este módulo, aunque puede ser usado directamente, está pensado para ser usado 
     $apache_config->load_config();
     $apache_config->print();
 
-=head1 DESCRIPCION
+
+=head1 DESCRIPCIÓN
 
 GesApl es una aplicación que permite monitorizar distintos servicios del sistema.
 
@@ -425,7 +439,30 @@ Cada servicio se define por cuatro propiedades fundamentales:
 
 La configuración en el directorio indicado en el valor de configuración 'services_data')
 
-=head1 METODOS
+
+=head1 MÉTODOS
+
+
+=head2 CONSTRUCTOR
+
+=head3 new( nombre [ script, pidfile, process ] )
+
+Crea una instancia de GesApl::Service.
+
+Podemos pasarle el nombre únicamente o las cuatro propiedades que definen a un servicio:
+
+=over
+
+=item - nombre
+
+=item - nombre del script de arranque y parada en /etc/init.d
+
+=item - ruta del fichero pid
+
+=item - ruta del proceso en el sistema
+
+=back
+
 
 =head2 LECTURA DE PROPIEDADES
 
@@ -447,25 +484,7 @@ La configuración en el directorio indicado en el valor de configuración 'servi
 =head3 set_process()
 
 
-=head2 MÉTODOS
-
-=head3 new( nombre [ script, pidfile, process ] )
-
-Crea una instancia de GesApl::Service.
-
-Podemos pasarle el nombre únicamente o las cuatro propiedades que definen a un servicio:
-
-=over
-
-=item - nombre
-
-=item - nombre del script de arranque y parada en /etc/init.d
-
-=item - ruta del fichero pid
-
-=item - ruta del proceso en el sistema
-
-=back
+=head2 OTROS MÉTODOS
 
 =head3 get_registered()
 
@@ -495,6 +514,10 @@ Devuelve un timestamp con la última fecha y hora de monitorización
 
 Carga la configuración de nuevo desde el fichero correspondiente en /etc/gesapl/services
 
+=head3 get_config()
+
+Imprime las cuatro propiedades del servicio en la salida estándar
+
 =head3 is_deleted()
 
 Indica si la configuración del servicio ha sido borrada pero aún está en el registro
@@ -507,7 +530,7 @@ Elimina la configuración del servicio
 
 Añade una configuŕación al registro
 
-Si sólo tiene valor la propiedad name y el servicio ha sido borrado, se recuperan los datos almacenados antes de haberlo borrado.
+Si en la instancia sólo tiene valor la propiedad name y el servicio ha sido borrado, se recuperan los datos almacenados antes de haberlo borrado.
 
 =head3 monitor()
 
