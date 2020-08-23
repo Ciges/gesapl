@@ -4,7 +4,7 @@
 # Permite listar y configurar los servicios a monitorizar
 
 # CONFIGURACIÓN
-CONFIG_FILE="/etc/gesapl/gesapl.conf"
+CONFIG_FILE="/usr/local/etc/gesapl/gesapl.conf"
 GESAPL_VERSION="1.00"
 
 # FUNCIONES

@@ -4,7 +4,7 @@
 # Permite arrancar, detener y reinicar los servicios configurados en GesApl
 
 # CONFIGURACIÓN
-CONFIG_FILE="/etc/gesapl/gesapl.conf"
+CONFIG_FILE="/usr/local/etc/gesapl/gesapl.conf"
 GESAPLCTL_VERSION="1.00"
 
 # FUNCIONES

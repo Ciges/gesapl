@@ -10,7 +10,7 @@ gesapl_description=GesApl v2.00 - Aplicación de monitorización de servicios
 admin_emails=jmanuel.ciges@gmail.com,theangryjose@gmail.com
 
 ; directory where service data will be saved
-services_data=/etc/gesapl/services
+services_data=/usr/local/etc/gesapl/services
 
 ; temporary dir (writable by non root users)
 tmp_dir=/tmp/gesapl
