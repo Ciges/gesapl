@@ -1,8 +1,10 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use lib '/usr/local/lib';
 
+# Script for calling GesApl v2.00 aplication
+
+use lib '/usr/local/lib';
 # load some modules
 use Data::Dumper;
 use Getopt::Long qw(GetOptions);
