@@ -1,3 +1,4 @@
+#  GesApl v2.00 - Class GesApl::Service :  Management of the list of services to monitor
 package GesApl::ServiceList;
 
 use strict;

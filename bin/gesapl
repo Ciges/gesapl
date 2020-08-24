@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script de monitorización de servicios de GesApl
+# Script de monitorización de servicios de GesApl v1.00
 # Permite listar y configurar los servicios a monitorizar
 
 # CONFIGURACIÓN

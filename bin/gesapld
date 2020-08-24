@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script para crear un demonio que arranque gesapl
+# Script para crear un demonio que arranque GesApl v1.00
 # Basado en la excelente respuesta de Mike S en https://stackoverflow.com/questions/3430330/best-way-to-make-a-shell-script-daemon
 
 

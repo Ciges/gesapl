@@ -1,5 +1,5 @@
+#  GesApl v2.00 - Class GesApl::App :  Aplication class
 package GesApl::App;
-
 use strict;
 use warnings;
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Funciones comunes a varios scripts de GesApl
+# GesApl v1.00 - Funciones comunes a varios scripts de GesApl
 
 # Graba el mensaje pasado como parámetro en el log del demonio, precedido de la fecha y hora
 function log {

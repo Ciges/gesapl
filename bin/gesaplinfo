@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script de generación de informes de uso de GesApl
+# Script de generación de informes de uso de GesApl v1.00
 # Genera un informe con 
 # - Relación de programas monitorizados (sus nombres)
 # - Última hora de cada uno de esos programas. Si funcionan y el momento de su último control.

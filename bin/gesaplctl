@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script de control de servicios monitorizados por GesApl
+# Script de control de servicios monitorizados por GesApl v1.00
 # Permite arrancar, detener y reinicar los servicios configurados en GesApl
 
 # CONFIGURACIÓN

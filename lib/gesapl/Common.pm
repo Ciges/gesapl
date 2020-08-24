@@ -1,3 +1,4 @@
+#  GesApl v2.00 - Class GesApl::Common :  Common functions
 package GesApl::Common;
 use strict;
 use warnings;
