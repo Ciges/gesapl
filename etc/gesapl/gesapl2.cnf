@@ -1,13 +1,11 @@
 ; General configuration for GesApl v2.00
 
 [general]
+
 installation_dir=/usr/local
 
 ; application description, shown in help text
 gesapl_description=GesApl v2.00 - Aplicación de monitorización de servicios
-
-; list of administrators emails, separated by ,
-admin_emails=jmanuel.ciges@gmail.com,theangryjose@gmail.com
 
 ; directory where service data will be saved
 services_data=/usr/local/etc/gesapl/services
@@ -19,6 +17,7 @@ tmp_dir=/tmp/gesapl
 log_commands_file=/tmp/gesapl/gesapl2_commands.log
 
 [daemon]
+
 ; daemon binary
 gesapld_bin=/usr/local/bin/gesapld2
 
@@ -41,3 +40,20 @@ monitor_interval=60
 
 ; flag to tell daemon to stop
 stop_flag=/var/run/gesapld/gesapld2.stop
+
+[mail]
+
+; Send email to admins?
+send_emails=yes
+
+; list of administrators emails, separated by ,
+admin_emails=jmanuel.ciges@gmail.com,theangryjose@gmail.com
+
+; Configuracion of SMTP to send emails
+smtp_server=smtp.gmail.com
+smtp_port=465
+smtp_user=theangryjose@gmail.com
+smtp_pass=Cvas1HdVe2020
+
+
+

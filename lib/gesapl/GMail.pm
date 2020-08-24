@@ -4,16 +4,22 @@ package GesApl::GMail;
 
 use strict;
 use warnings;
+use feature 'say';
+
+# TODO: Add error control
 
 # Needed modules
+use Net::SMTP::SSL;
 
 # TODO: Delete when dev is finished
 use Data::Dumper;
 
+# GesApl modules
+use GesApl::App;
+
 # CONSTRUCTOR
 
-# Connects to Google SMTP server and returns an instance of GesApl::GMail
-# If the connection is not possible then NULL is returned
+# Returns an instance of GesApl::GMail
 sub new {
     my $class = shift;
 
@@ -29,12 +35,56 @@ sub new {
 sub _initialize {
     my $self = shift;
 
+    my ( $server, $port, $user, $pass ) = (
+        GesApl::App->get_cfg( 'mail', 'smtp_server' ),
+        GesApl::App->get_cfg( 'mail', 'smtp_port' ),
+        GesApl::App->get_cfg( 'mail', 'smtp_user' ),
+        GesApl::App->get_cfg( 'mail', 'smtp_pass' )
+    );
+
+    $self->{_server} = $server;
+    $self->{_port}   = $port;
+    $self->{_user}   = $user;
+    $self->{_pass}   = $pass;
 }
 
-# Send email. Parameters are tree: mail receiver, subject and text of email
-sub send_mail {
+# Send email. Parameters are three: mail receiver, subject and text of email
+sub send {
     my $self = shift;
+    my ( $receiver, $subject, $body ) = @_;
 
+    # Connection to SMTP server
+    my $smtp = Net::SMTP::SSL->new(
+        $self->{_server},
+        Port    => $self->{_port},
+        Debug   => 0,
+        Timeout => 60
+    ) or die("Error connecting to SMTP server: $!\n");
+    $smtp->auth( $self->{_user}, $self->{_pass} )
+        or die("Error authenticating username $self->{_user}: $!\n");
+
+    # Creation and send of email
+    $smtp->mail( $self->{_user} );
+
+    # TODO: Add error control
+    #if ( $smtp->to($receiver) )  {
+    $smtp->to($receiver);
+    $smtp->data();
+    $smtp->datasend( "From: " . $self->{_user} );
+    $smtp->datasend("\n");
+    $smtp->datasend( "To: " . $receiver );
+    $smtp->datasend("\n");
+    $smtp->datasend( "Subject: " . $subject . "" );
+    $smtp->datasend("\n");
+    $smtp->datasend( $body . "" );
+    $smtp->dataend();
+
+    #} else {
+    #    # Replace by a write to the log
+    #    die(sprintf("Error sending mail to %s: %s\n", $receiver, $smtp->message()));
+    #}
+
+    $smtp->quit();
 }
 
 1;
@@ -80,8 +130,8 @@ No tiene parámetros.
 
 =head2 OTROS MÉTODOS
 
-=head3 send_mail( remitente, asunto, mensaje)
+=head3 send( destinatario, asunto, mensaje)
 
-Envia el correo al remitente y con el asunto y mensaje indicados en los parámetros.
+Envia el correo al email de destino y con el asunto y mensaje indicados en los parámetros.
 
 =cut

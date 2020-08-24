@@ -8,11 +8,14 @@ use lib '/usr/local/lib';
 # load some modules
 use Data::Dumper;
 use Getopt::Long qw(GetOptions);
+use Sys::Hostname;
+use POSIX qw(strftime);
 
 # GesApl modules
 use GesApl::Common qw(help error_message info_message);
 use GesApl::App;
 use GesApl::Service;
+use GesApl::GMail;
 
 # Constant and default values
 use constant DESCRIPTION =>
@@ -163,7 +166,43 @@ elsif ($ms) {
                     $_->get_monitor_lasttime()
                 );
             }
+
+            # Send email to admins if service is down
+            if ( GesApl::App->get_cfg( 'mail', 'send_emails' ) eq 'yes' ) {
+                # Flag to avoid sent multiple emails for the same alert
+                my $mail_flag = GesApl::App->get_cfg( 'tmp_dir' ).'/'.$_->get_name().".mailsent";
+                if ( not $_->get_monitor_status() ) {
+                    if ( not -e $mail_flag ) {
+                        my @admins = split(',', GesApl::App->get_cfg( 'mail', 'admin_emails' ));
+                        my $gmail = GesApl::GMail->new();
+
+                        my $service = $_->get_name();
+                        my $status_message = $_->get_monitor_status_message();
+                        foreach my $receiver (@admins) {
+                            my $subject = sprintf("Servicio %s KO en el servidor %s\n", $service, hostname);
+                            my $now = strftime("%b %e %T", localtime());
+                            my $body;
+                            if ( not $status_message ) {
+                                $body = sprintf("%s El servicio %s está caído (servidor %s)\n", $now, $service, hostname);
+                            }
+                            else {
+                                $body = sprintf("%s El servicio %s está caído (warning: '%s', servidor %s)\n", $now, $service, $status_message, hostname);
+                            }
+                            $gmail->send($receiver, $subject, $body);
+                        }
+                        open my $flag, '>', "$mail_flag"
+                            or die("Unable to create file $mail_flag");
+                        close $flag;
+                    }
+                }
+                else {
+                    # Service is up again, remove flag
+                    unlink $mail_flag if ( -e $mail_flag);
+                }
+            }
+
         }
+
         printf "\n";
     }
     else {
