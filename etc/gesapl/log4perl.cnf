@@ -1,0 +1,21 @@
+# Log configuration for GesApl v2.00
+# We have two log files
+# - A general log, used by primaraly by the daemon, and also by the monitoring script
+# - A commmands log, used by all scripts, where a history of commands used will be saved
+
+# Daemon log
+log4perl.logger.daemon=INFO,LOGFILE
+log4perl.appender.LOGFILE=Log::Log4perl::Appender::File
+log4perl.appender.LOGFILE.filename=/var/log/gesapld2.log
+log4perl.appender.LOGFILE.mode=append
+log4perl.appender.LOGFILE.umask=0111
+log4perl.appender.LOGFILE.layout=PatternLayout
+log4perl.appender.LOGFILE.layout.ConversionPattern=%d{MMM dd HH:mm} - %p - %m%n
+
+log4perl.logger.commands=INFO,COMMANDSFILE
+log4perl.appender.COMMANDSFILE=Log::Log4perl::Appender::File
+log4perl.appender.COMMANDSFILE.filename=/tmp/gesapl/gesapl2_commands.log
+log4perl.appender.COMMANDSFILE.mode=append
+log4perl.appender.COMMANDSFILE.umask=0111
+log4perl.appender.COMMANDSFILE.layout=PatternLayout
+log4perl.appender.COMMANDSFILE.layout.ConversionPattern=%d{MMM dd HH:mm} - %m%n

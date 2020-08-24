@@ -3,10 +3,13 @@ package GesApl::App;
 use strict;
 use warnings;
 
+use experimental qw(switch);
+
 # Needed modules
 use Config::IniFiles;
 use File::Path qw(mkpath);
 use File::Basename;
+use Log::Log4perl qw(get_logger);
 
 # GesApl modules
 use GesApl::ServiceList;
@@ -16,6 +19,7 @@ use Data::Dumper;
 
 # Constants and default values
 use constant CFG_FILE => "/usr/local/etc/gesapl/gesapl2.cnf";
+
 
 # CONSTRUCTOR
 
@@ -52,26 +56,15 @@ sub _initialize {
             or die();
     }
 
-# Creation of empty daemon log file, writable by everyone
-# TODO: Limit the rights in the log to be writeable only by the dameon and create a communication between client scripts and daemon
-    my $daemon_log_file = GesApl::App->get_cfg( 'daemon', 'log_file' );
-    if ( not -e $daemon_log_file and -w dirname($daemon_log_file) ) {
-        open my $log, '>>', "$daemon_log_file"
-            or die();
-        close $log;
-        chmod 0666, $daemon_log_file
-            or die();
+    # Open log files, defined in log4perl.cnf configuration file
+    # TODO: Make it a little better, now if there is a problem with log4j no log is done
+    eval {  Log::Log4perl::init(GesApl::App->get_cfg( 'log_configuration' )); };
+    if (not $@)  {
+        $self->{_logger} = get_logger("daemon");
+        $self->{_commands_logger} = get_logger("commands");
     }
-
-    # Creation of commands log, to be writable by all the scripts
-    my $log_commands_file
-        = GesApl::App->get_cfg( 'general', 'log_commands_file' );
-    if ( not -e $log_commands_file ) {
-        open my $log, '>>', "$log_commands_file"
-            or die();
-        close $log;
-        chmod 0666, $log_commands_file
-            or die();
+    else {
+        printf "WARNING: No se han podido abrir los archivos log (error: ".$@.")\n";
     }
 
     # Add an instance of ServiceList
@@ -185,6 +178,38 @@ sub monitor_services {
     return $self->{_ServiceList}->monitor_services();
 }
 
+# Sends a message to the log file with the severity level as first parameter and message as second
+# If only the message is passed then level info will be set as default
+# Returns 0 if no logger has been initiated
+sub log {
+    my $self = shift;
+
+    my $logger = $self->{_logger};
+    if ($logger)  {
+        my $level = 'info';
+        my $message;
+        given(scalar @_)  {
+            when (1)  {  $message = shift;  }
+            when (2)  { ($level, $message) = @_; }
+            default   { die ("Incorrect number of paremeters in function GesApl::App->log()\n"); }
+        }
+
+        given($level)  {
+            when ('debug')  { $logger->debug($message); }
+            when ('info')  { $logger->info($message); }
+            when ('warn')  { $logger->warn($message); }
+            when ('error')  { $logger->error($message); }
+            when ('fatal')  { $logger->fatal($message); }
+        }
+    }
+    else {
+        return 0;
+    }
+}
+
+# Same 
+
+
 1;
 
 __END__
@@ -249,6 +274,12 @@ Elimina la configuración del servicio
 
 Registra un servicio en la aplicación.
 Admite 1 ó 4 parámetros:
+
+=head3 log([nivel=info,] mensaje)
+
+Escribe un mensaje en el log de la aplicación (configurado en /etc/gesapl/log4perl.cnf).
+El primer parámetro indica el nivel, una de las siguientes palabras clave: debug, info, warn, error, fatal. Este parámetro es opcional, si no se indica el nivel escogido será info
+El segundo parámetro es una cadena de texto a escribir en el log.
 
 =over
 

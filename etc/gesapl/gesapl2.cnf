@@ -13,8 +13,8 @@ services_data=/usr/local/etc/gesapl/services
 ; temporary dir (writable by non root users)
 tmp_dir=/tmp/gesapl
 
-; aplication commands log file (writable by non root users)
-log_commands_file=/tmp/gesapl/gesapl2_commands.log
+; Log configuration file
+log_configuration=/usr/local/etc/gesapl/log4perl.cnf
 
 [daemon]
 
@@ -26,12 +26,6 @@ tmp_dir_gesapld=/var/run/gesapld
 
 ; pid file
 pid_gesapld=/var/run/gesapld/gesapld2.pid
-
-; daemon log
-log_file=/var/log/gesapld2.log
-
-; Service monitor message format
-log_monitor_service_format="Monitorización del servicio %s: \n"
 
 ; Command to run for service monitoring
 monitor_services="/usr/local/bin/gesapl2 -ms"
@@ -52,7 +46,7 @@ admin_emails=jmanuel.ciges@gmail.com,theangryjose@gmail.com
 ; Configuracion of SMTP to send emails
 smtp_server=smtp.gmail.com
 smtp_port=465
-smtp_user=theangryjose@gmail.com
+smtp_user   =theangryjose@gmail.com
 smtp_pass=Cvas1HdVe2020
 
 

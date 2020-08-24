@@ -5,11 +5,13 @@ use warnings;
 # Script for calling GesApl v2.00 aplication
 
 use lib '/usr/local/lib';
+
 # load some modules
 use Data::Dumper;
 use Getopt::Long qw(GetOptions);
 use Sys::Hostname;
 use POSIX qw(strftime);
+use Log::Log4perl qw(get_logger);
 
 # GesApl modules
 use GesApl::Common qw(help error_message info_message);
@@ -92,6 +94,8 @@ elsif ($bs) {
         "el servicio $bs no se ha podido eliminar del registro", 3 );
 
     &info_message("Configuración del servicio $bs eliminada\n");
+    # Save command result in log
+    $gesapl->log("Configuración del servicio $bs eliminada");
 
 }
 
@@ -127,6 +131,8 @@ elsif (@rs) {
 
     &info_message(
         "Configuración del servicio " . $service_name . " añadida\n" );
+    # Save command result in log
+    $gesapl->log("Configuración del servicio " . $service_name . " añadida");
 
 }
 
@@ -157,6 +163,15 @@ elsif ($ms) {
                     $_->get_monitor_lasttime(),
                     $_->get_monitor_status_message()
                 );
+
+                # Save monitor result in daemon log
+                $gesapl->log(
+                    sprintf("Monitorización del servicio %s: %s - WARNING: %s",
+                        $_->get_name(),
+                        $_->get_monitor_status() ? "OK" : "KO",
+                        $_->get_monitor_status_message()
+                    )
+                );
             }
             else {
                 printf(
@@ -165,30 +180,53 @@ elsif ($ms) {
                     $_->get_monitor_status() ? "OK" : "KO",
                     $_->get_monitor_lasttime()
                 );
+
+                # Save monitor result in daemon log
+                $gesapl->log(
+                    sprintf("Monitorización del servicio %s: %s",
+                        $_->get_name(),
+                        $_->get_monitor_status() ? "OK" : "KO",
+                    )
+                );
             }
 
             # Send email to admins if service is down
             if ( GesApl::App->get_cfg( 'mail', 'send_emails' ) eq 'yes' ) {
+
                 # Flag to avoid sent multiple emails for the same alert
-                my $mail_flag = GesApl::App->get_cfg( 'tmp_dir' ).'/'.$_->get_name().".mailsent";
+                my $mail_flag
+                    = GesApl::App->get_cfg('tmp_dir') . '/'
+                    . $_->get_name()
+                    . ".mailsent";
                 if ( not $_->get_monitor_status() ) {
                     if ( not -e $mail_flag ) {
-                        my @admins = split(',', GesApl::App->get_cfg( 'mail', 'admin_emails' ));
+                        my @admins = split( ',',
+                            GesApl::App->get_cfg( 'mail', 'admin_emails' ) );
                         my $gmail = GesApl::GMail->new();
 
-                        my $service = $_->get_name();
+                        my $service        = $_->get_name();
                         my $status_message = $_->get_monitor_status_message();
                         foreach my $receiver (@admins) {
-                            my $subject = sprintf("Servicio %s KO en el servidor %s\n", $service, hostname);
-                            my $now = strftime("%b %e %T", localtime());
+                            my $subject
+                                = sprintf(
+                                "Servicio %s KO en el servidor %s\n",
+                                $service, hostname );
+                            my $now = strftime( "%b %e %T", localtime() );
                             my $body;
                             if ( not $status_message ) {
-                                $body = sprintf("%s El servicio %s está caído (servidor %s)\n", $now, $service, hostname);
+                                $body
+                                    = sprintf(
+                                    "%s El servicio %s está caído (servidor %s)\n",
+                                    $now, $service, hostname );
                             }
                             else {
-                                $body = sprintf("%s El servicio %s está caído (warning: '%s', servidor %s)\n", $now, $service, $status_message, hostname);
+                                $body
+                                    = sprintf(
+                                    "%s El servicio %s está caído (warning: '%s', servidor %s)\n",
+                                    $now, $service, $status_message,
+                                    hostname );
                             }
-                            $gmail->send($receiver, $subject, $body);
+                            $gmail->send( $receiver, $subject, $body );
                         }
                         open my $flag, '>', "$mail_flag"
                             or die("Unable to create file $mail_flag");
@@ -197,7 +235,7 @@ elsif ($ms) {
                 }
                 else {
                     # Service is up again, remove flag
-                    unlink $mail_flag if ( -e $mail_flag);
+                    unlink $mail_flag if ( -e $mail_flag );
                 }
             }
 
@@ -207,6 +245,8 @@ elsif ($ms) {
     }
     else {
         printf("\nNo hay servicios registrados en gesapl\n");
+        # Save monitor result in daemon log
+        $gesapl->log("Monitorización no realizada: No hay servicios registrados en gesapl\n");
     }
 
 }
