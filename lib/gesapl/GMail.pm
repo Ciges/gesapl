@@ -6,13 +6,8 @@ use strict;
 use warnings;
 use feature 'say';
 
-# TODO: Add error control
-
 # Needed modules
 use Net::SMTP::SSL;
-
-# TODO: Delete when dev is finished
-use Data::Dumper;
 
 # GesApl modules
 use GesApl::App;
@@ -66,23 +61,20 @@ sub send {
     # Creation and send of email
     $smtp->mail( $self->{_user} );
 
-    # TODO: Add error control
-    #if ( $smtp->to($receiver) )  {
-    $smtp->to($receiver);
-    $smtp->data();
-    $smtp->datasend( "From: " . $self->{_user} );
-    $smtp->datasend("\n");
-    $smtp->datasend( "To: " . $receiver );
-    $smtp->datasend("\n");
-    $smtp->datasend( "Subject: " . $subject . "" );
-    $smtp->datasend("\n");
-    $smtp->datasend( $body . "" );
-    $smtp->dataend();
-
-    #} else {
-    #    # Replace by a write to the log
-    #    die(sprintf("Error sending mail to %s: %s\n", $receiver, $smtp->message()));
-    #}
+    if ( $smtp->to($receiver) )  {
+        $smtp->data();
+        $smtp->datasend( "From: " . $self->{_user} );
+        $smtp->datasend("\n");
+        $smtp->datasend( "To: " . $receiver );
+        $smtp->datasend("\n");
+        $smtp->datasend( "Subject: " . $subject . "" );
+        $smtp->datasend("\n");
+        $smtp->datasend( $body . "" );
+        $smtp->dataend();
+    } else {
+        # Replace by a write to the log
+        GesApl::App->log('error', sprintf("Error sending mail to %s: %s\n", $receiver, $smtp->message()));
+    }
 
     $smtp->quit();
 }
