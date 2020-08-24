@@ -30,7 +30,7 @@ pid_gesapld=/var/run/gesapld/gesapld.pid
 ; Command to run for service monitoring
 monitor_services="/usr/local/bin/gesapl2 -ms"
 ; Pause between service monitoring
-monitor_interval=60
+monitor_interval=600
 
 ; flag to tell daemon to stop
 stop_flag=/var/run/gesapld/gesapld.stop
