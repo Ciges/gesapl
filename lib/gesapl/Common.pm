@@ -7,8 +7,7 @@ use Exporter qw(import);
 
 our @EXPORT = qw(help error_message info_message);
 
-
-# load some modules
+# Needed modules
 use Pod::Usage qw(pod2usage);
 use IO::String;
 use Pod::Select;

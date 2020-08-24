@@ -15,9 +15,6 @@ use Log::Log4perl qw(get_logger);
 use GesApl::ServiceList;
 use GesApl::Service;
 
-# TODO: Delete when dev is finished
-use Data::Dumper;
-
 # Constants and default values
 use constant CFG_FILE => "/etc/gesapl/gesapl2.cnf";
 

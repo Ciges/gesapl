@@ -9,9 +9,6 @@ use feature 'say';
 use File::Copy;
 use Proc::ProcessTable;
 
-# TODO: Delete when dev is finished
-use Data::Dumper;
-
 # GesApl modules
 use GesApl::App;
 

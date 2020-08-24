@@ -4,11 +4,6 @@ package GesApl::ServiceList;
 use strict;
 use warnings;
 
-# Needed modules
-
-# TODO: Delete when dev is finished
-use Data::Dumper;
-
 # GesApl modules
 use GesApl::App;
 use GesApl::Service;
