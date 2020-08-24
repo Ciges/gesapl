@@ -72,7 +72,6 @@ sub send {
         $smtp->datasend( $body . "" );
         $smtp->dataend();
     } else {
-        # Replace by a write to the log
         GesApl::App->log('error', sprintf("Error sending mail to %s: %s\n", $receiver, $smtp->message()));
     }
 
