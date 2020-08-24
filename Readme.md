@@ -9,14 +9,14 @@
 En este repositorio está el código fuente de una aplicación para monitorizar y controlar los servicios de un sistema Linux.
 
 Disponemos de los siguientes scripts:
-- `gesapl`: Permite configurar los servicios a monitorizar
+- `gesapl2`: Permite configurar los servicios a monitorizar, esta es la versión 2, desarrollada en perl del original gesapl
 - `gesaplctl`:  Permite arrancar y detener servicios del sistema
 - `gesapld`:  Demonio que una vez arrancado monitoriza los servicios del sistema en background, controlando su estado cada 60 segundos
 - `gesaplinfo`:  Genera un informe del estado del demonio y los servicios configurados y los comandos ejecutados por los usuarios
 
 Si se ejecuta cualquiera de estos scripts con la opción `-a` se mostrará una ayuda completa con las distintas opciones.
 
-La configuración de la aplicación está en el archivo `/etc/gesapl/gesapl.conf`.
+La configuración de la aplicación está en el archivo `/etc/gesapl/gesapl2.conf`.
 
 En la configuración por defecto:
 - Los binarios de la aplicación se encuentran en `/usr/local/bin`
@@ -32,7 +32,7 @@ Los parámetros admitidos por los scripts son los indicados a continuación ...
 
 Permite configurar los servicios a monitorizar
 
-Uso del script: `gesapl orden parámetros`
+Uso del script: `gesapl2 orden parámetros`
 
 Siendo orden una de las siguientes: `--monitorizar_servicios` (o `-ms` ), `--registrar_servicio` (o `-rs`), `--borrar_servicio` (o `-bs`),  `--listar_servicios` (o `-ls`), `--ayuda` (o `-a`)
 
@@ -57,14 +57,14 @@ Ejemplos:
 Monitorizar Apache y MySQL
 
 ```
-gesapl --registrar_servicio apache apache2 /var/run/apache2/apache2.pid /usr/sbin/apache2
-gesapl --registrar_servicio mysql mysql /run/mysqld/mysql.pid /usr/sbin/mysqld
+gesapl2 --registrar_servicio apache apache2 /var/run/apache2/apache2.pid /usr/sbin/apache2
+gesapl2 --registrar_servicio mysql mysql /run/mysqld/mysql.pid /usr/sbin/mysqld
 ```
 
 Dejar de monitorizar MySQL
 
 ```
-gesapl --borrar_servicio mysql
+gesapl2 --borrar_servicio mysql
 ```
 
 ## gesapctl:  control de servicios
