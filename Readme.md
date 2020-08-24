@@ -16,7 +16,7 @@ Disponemos de los siguientes scripts:
 
 Si se ejecuta cualquiera de estos scripts con la opción `-a` se mostrará una ayuda completa con las distintas opciones.
 
-La configuración de la aplicación está en el archivo `/etc/gesapl/gesapl2.conf`.
+La configuración de la aplicación está en el archivo `/etc/gesapl/gesapl2.cnf`.
 
 En la configuración por defecto:
 - Los binarios de la aplicación se encuentran en `/usr/local/bin`
@@ -111,3 +111,62 @@ El informe consta de
 - Últimos 20 comandos ejecutados en GesApl, con sus parámetros, fecha y hora de ejecución y usuario que lo lanzó
 - Configuración registrada de cada servicio
 
+## Instrucciones de instalación y ejemplo de configuración y uso
+
+Los scripts han sido desarrollados y probados en un servidor **Linux Debian 10**. 
+
+Para instalarlo y configurarlo en un servidor en el que, por ejemplo, tuviéramos corriendo tres servicios: Apache, MySQL y OpenSSH, haríamos lo siguiente:
+
+El script principal `gesapl2` está desarrollado en Perl y es necesario instalar los siguientes **módulos Perl**, normalmente no incluídos en una instalación estándar:
+- Proc::ProcessTable
+- Log::Log4Perl
+
+En Debian la instalación se hace con el siguiente comando:
+```bash
+apt install libproc-processtable-perl liblog-log4perl-perl
+```
+
+Una vez instaladas las dependencias de Perl, lo más práctico sería clonar directamente el código del repositorio de Github y como root ejecutar el script install.sh
+
+```bash
+git clone https://github.com/Ciges/gesapl
+./gesapl/install.sh
+```
+
+Este script instala los archivos en las siguientes rutas del sistema
+- `/etc/gesapl` :  Configuración de la aplicación
+- `/usr/local/bin` :  Scripts ejecutables
+- `/usr/local/lib/gesapl` :  Clases de Perl y scripts de la shell desarrollados para GesApl
+
+Ya está configurado por defecto en el registro la monitorización de Apache, MySQL y SSH, con los parámetros de scripts en /etc/init.d, fichero pid y proceso que encontramos en una Debian 10.
+
+Si ejecutamos `gesapl2 -ls` deberiamos obtener el siguiente mensje:
+```
+Servicios monitorizados: apache mysql ssh 
+
+Configuración de los servicios:
+    - apache:  script de arranque=/etc/init.d/apache2, fichero pid=/var/run/apache2/apache2.pid, proceso=/usr/sbin/apache2
+    - mysql:  script de arranque=/etc/init.d/mysql, fichero pid=/var/run/mysqld/mysqld.pid, proceso=/usr/sbin/mysqld
+    - ssh:  script de arranque=/etc/init.d/ssh, fichero pid=/var/run/sshd.pid, proceso=/usr/sbin/sshd
+```
+
+Suponiendo que Apache y MySQL estén arrancados
+
+
+Y arrancamos el demonio
+
+```bash
+gesapld start
+```
+
+A partir de aquí podríamos ver cómo están siendo monitorizados los servicios visualizando el log `/var/log/gesapld2.log`, lanzar una monitorización con el comando
+
+```bash
+gesapl2 -ms
+```
+
+U obtener un informe completo del estado de la aplicación con
+
+```
+gesaplinfo
+```
