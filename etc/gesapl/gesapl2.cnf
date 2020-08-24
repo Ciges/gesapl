@@ -19,13 +19,13 @@ log_configuration=/usr/local/etc/gesapl/log4perl.cnf
 [daemon]
 
 ; daemon binary
-gesapld_bin=/usr/local/bin/gesapld2
+gesapld_bin=/usr/local/bin/gesapld
 
 ; daemon temporary dir
 tmp_dir_gesapld=/var/run/gesapld
 
 ; pid file
-pid_gesapld=/var/run/gesapld/gesapld2.pid
+pid_gesapld=/var/run/gesapld/gesapld.pid
 
 ; Command to run for service monitoring
 monitor_services="/usr/local/bin/gesapl2 -ms"
@@ -33,7 +33,7 @@ monitor_services="/usr/local/bin/gesapl2 -ms"
 monitor_interval=60
 
 ; flag to tell daemon to stop
-stop_flag=/var/run/gesapld/gesapld2.stop
+stop_flag=/var/run/gesapld/gesapld.stop
 
 [mail]
 
@@ -46,7 +46,7 @@ admin_emails=jmanuel.ciges@gmail.com,theangryjose@gmail.com
 ; Configuracion of SMTP to send emails
 smtp_server=smtp.gmail.com
 smtp_port=465
-smtp_user   =theangryjose@gmail.com
+smtp_user=theangryjose@gmail.com
 smtp_pass=Cvas1HdVe2020
 
 

@@ -1,18 +1,24 @@
 #!/bin/bash
 
-# Script para crear un demonio que arranque GesApl v1.00
+# Script para crear un demonio que arranque GesApl v2.00
 # Basado en la excelente respuesta de Mike S en https://stackoverflow.com/questions/3430330/best-way-to-make-a-shell-script-daemon
 
+#CONFIG_FILE="/usr/local/etc/gesapl/gesapl.conf"
+#if ! [ -r ${CONFIG_FILE} ];  then
+#    printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
+#    exit 1
+#fi;
+#source ${CONFIG_FILE}
 
-GESAPLD_VERSION="1.00"
+INIT_SCRIPT="/usr/local/lib/gesapl/gesapl_init.sh"
+GESAPL_VERSION="1.2"
 
-
-CONFIG_FILE="/usr/local/etc/gesapl/gesapl.conf"
-if ! [ -r ${CONFIG_FILE} ];  then
-    printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
+if ! [ -r ${INIT_SCRIPT} ];  then
+    printf "ERROR: %s!\n\n" "Script de inicio ${INIT_SCRIPT} no encontrado o imposible de leer"
     exit 1
 fi;
-source ${CONFIG_FILE}
+source ${INIT_SCRIPT}
+
 
 
 # FUNCIONES

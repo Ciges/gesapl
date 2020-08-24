@@ -4,8 +4,12 @@
 # Permite listar y configurar los servicios a monitorizar
 
 # CONFIGURACIÓN
-CONFIG_FILE="/usr/local/etc/gesapl/gesapl.conf"
-GESAPL_VERSION="1.00"
+#CONFIG_FILE="/usr/local/etc/gesapl/gesapl.conf"
+#GESAPL_VERSION="1.00"
+
+# Cargamos la configuración del nuevo archivo gesapl2.cnf
+INIT_SCRIPT="/usr/local/lib/gesapl/gesapl_init.sh"
+GESAPL_VERSION="1.2"
 
 # FUNCIONES
 function help {
@@ -45,13 +49,20 @@ Dejar de monitorizar MySQL
 
 
 # INICIO DEL CODIGO
-if ! [[ -r ${CONFIG_FILE} ]];  then
-    printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
-    help
+#if ! [[ -r ${CONFIG_FILE} ]];  then
+#    printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
+#    help
+#    exit 1
+#fi;
+#
+#source ${CONFIG_FILE}
+
+if ! [ -r ${INIT_SCRIPT} ];  then
+    printf "ERROR: %s!\n\n" "Script de inicio ${INIT_SCRIPT} no encontrado o imposible de leer"
     exit 1
 fi;
+source ${INIT_SCRIPT}
 
-source ${CONFIG_FILE}
 
 # Valores por defecto
 comando=""
