@@ -7,15 +7,22 @@
 # - Relación de los últimos 20 comandos ejecutados en GesApl y de los parámetros que se le envíaron así como de la fecha y hora de su ejecución
 
 # CONFIGURACIÓN
-CONFIG_FILE="/usr/local/etc/gesapl/gesapl.conf"
-if ! [[ -r ${CONFIG_FILE} ]];  then
-    printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
-    help
+# Cargamos la configuración del nuevo archivo gesapl2.cnf
+
+#CONFIG_FILE="/usr/local/etc/gesapl/gesapl.conf"
+#if ! [[ -r ${CONFIG_FILE} ]];  then
+#    printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
+#    help
+#    exit 1
+#fi;
+#source ${CONFIG_FILE}
+INIT_SCRIPT="/usr/local/lib/gesapl/gesapl_init.sh"
+if ! [ -r ${INIT_SCRIPT} ];  then
+    printf "ERROR: %s!\n\n" "Script de inicio ${INIT_SCRIPT} no encontrado o imposible de leer"
     exit 1
 fi;
-source ${CONFIG_FILE}
-
-GESAPLINFO_VERSION="1.00"
+source ${INIT_SCRIPT}
+GESAPLINFO_VERSION="1.20"
 
 # Archivo en el que se grabará el informe de salida
 fichero_salida="${tmp_dir}/gesaplinfo_$(date +%Y%m%d-%H%M)"
