@@ -9,7 +9,7 @@
 # CONFIGURACIÓN
 # Cargamos la configuración del nuevo archivo gesapl2.cnf
 
-#CONFIG_FILE="/usr/local/etc/gesapl/gesapl.conf"
+#CONFIG_FILE="/etc/gesapl/gesapl.conf"
 #if ! [[ -r ${CONFIG_FILE} ]];  then
 #    printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
 #    help

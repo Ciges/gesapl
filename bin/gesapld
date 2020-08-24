@@ -3,7 +3,7 @@
 # Script para crear un demonio que arranque GesApl v2.00
 # Basado en la excelente respuesta de Mike S en https://stackoverflow.com/questions/3430330/best-way-to-make-a-shell-script-daemon
 
-#CONFIG_FILE="/usr/local/etc/gesapl/gesapl.conf"
+#CONFIG_FILE="/etc/gesapl/gesapl.conf"
 #if ! [ -r ${CONFIG_FILE} ];  then
 #    printf "ERROR: %s!\n\n" "Fichero de configuración ${CONFIG_FILE} no encontrado o imposible de leer"
 #    exit 1

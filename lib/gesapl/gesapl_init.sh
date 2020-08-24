@@ -8,8 +8,8 @@
 
 # CONFIGURACIÓN
 
-CONFIG_FILE="/usr/local/etc/gesapl/gesapl2.cnf"
-LOGS_CONFIG_FILE="/usr/local/etc/gesapl/log4perl.cnf"
+CONFIG_FILE="/etc/gesapl/gesapl2.cnf"
+LOGS_CONFIG_FILE="/etc/gesapl/log4perl.cnf"
 
 
 # -----------------------------------

@@ -19,7 +19,7 @@ use GesApl::Service;
 use Data::Dumper;
 
 # Constants and default values
-use constant CFG_FILE => "/usr/local/etc/gesapl/gesapl2.cnf";
+use constant CFG_FILE => "/etc/gesapl/gesapl2.cnf";
 
 # CONSTRUCTOR
 
@@ -43,7 +43,7 @@ sub _initialize {
     # Creation of temporary dir under /var/run if we are root
     my $tmp_dir_gesapld = GesApl::App->get_cfg( 'daemon', 'tmp_dir_gesapld' );
     if ( $< == 0 and not -d $tmp_dir_gesapld ) {
-        make_path($tmp_dir_gesapld)
+        mkpath($tmp_dir_gesapld)
             or die();
     }
 

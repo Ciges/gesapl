@@ -8,13 +8,13 @@ installation_dir=/usr/local
 gesapl_description=GesApl v2.00 - Aplicación de monitorización de servicios
 
 ; directory where service data will be saved
-services_data=/usr/local/etc/gesapl/services
+services_data=/etc/gesapl/services
 
 ; temporary dir (writable by non root users)
 tmp_dir=/tmp/gesapl
 
 ; Log configuration file
-log_configuration=/usr/local/etc/gesapl/log4perl.cnf
+log_configuration=/etc/gesapl/log4perl.cnf
 
 [daemon]
 
@@ -44,10 +44,11 @@ send_emails=yes
 admin_emails=jmanuel.ciges@gmail.com,theangryjose@gmail.com
 
 ; Configuracion of SMTP to send emails
+; Enable less secure apps to access Gmail for this to work! 
 smtp_server=smtp.gmail.com
 smtp_port=465
-smtp_user=theangryjose@gmail.com
-smtp_pass=Cvas1HdVe2020
+smtp_user=gesaplv2@gmail.com
+smtp_pass=dinahosting
 
 
 
