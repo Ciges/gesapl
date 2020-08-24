@@ -282,12 +282,12 @@ Ejemplos:
 
 Monitorizar Apache y MySQL
 
-    gesapl --registrar_servicio apache apache2 /var/run/apache2/apache2.pid /usr/sbin/apache2
-    gesapl --registrar_servicio mysql mysql /run/mysqld/mysqld.pid /usr/sbin/mysqld
+    gesapl2 --registrar_servicio apache apache2 /var/run/apache2/apache2.pid /usr/sbin/apache2
+    gesapl2 --registrar_servicio mysql mysql /run/mysqld/mysqld.pid /usr/sbin/mysqld
 
 Dejar de monitorizar MySQL
 
-    gesapl --borrar_servicio mysql
+    gesapl2 --borrar_servicio mysql
 
 =head1 USO
 
