@@ -150,7 +150,7 @@ elsif ($ms) {
                 printf(
                     "\t- %s : %s (%s) - WARNING: %s\n",
                     $_->get_name(),
-                    $_->get_monitor_status() ? "OK" : "NOOK",
+                    $_->get_monitor_status() ? "OK" : "KO",
                     $_->get_monitor_lasttime(),
                     $_->get_monitor_status_message()
                 );
@@ -159,7 +159,7 @@ elsif ($ms) {
                 printf(
                     "\t- %s : %s (%s) \n",
                     $_->get_name(),
-                    $_->get_monitor_status() ? "OK" : "NOOK",
+                    $_->get_monitor_status() ? "OK" : "KO",
                     $_->get_monitor_lasttime()
                 );
             }
