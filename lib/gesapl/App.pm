@@ -15,11 +15,11 @@ use Log::Log4perl qw(get_logger);
 use GesApl::ServiceList;
 use GesApl::Service;
 
+# TODO: Delete when dev is finished
 use Data::Dumper;
 
 # Constants and default values
 use constant CFG_FILE => "/usr/local/etc/gesapl/gesapl2.cnf";
-
 
 # CONSTRUCTOR
 
@@ -58,13 +58,14 @@ sub _initialize {
 
     # Open log files, defined in log4perl.cnf configuration file
     # TODO: Make it a little better, now if there is a problem with log4j no log is done
-    eval {  Log::Log4perl::init(GesApl::App->get_cfg( 'log_configuration' )); };
-    if (not $@)  {
-        $self->{_logger} = get_logger("daemon");
+    eval { Log::Log4perl::init( GesApl::App->get_cfg('log_configuration') ); };
+    if ( not $@ ) {
+        $self->{_logger}          = get_logger("daemon");
         $self->{_commands_logger} = get_logger("commands");
     }
     else {
-        printf "WARNING: No se han podido abrir los archivos log (error: ".$@.")\n";
+        printf "WARNING: No se han podido abrir los archivos log (error: "
+            . $@ . ")\n";
     }
 
     # Add an instance of ServiceList
@@ -185,21 +186,24 @@ sub log {
     my $self = shift;
 
     my $logger = $self->{_logger};
-    if ($logger)  {
+    if ($logger) {
         my $level = 'info';
         my $message;
-        given(scalar @_)  {
-            when (1)  {  $message = shift;  }
-            when (2)  { ($level, $message) = @_; }
-            default   { die ("Incorrect number of paremeters in function GesApl::App->log()\n"); }
+        given ( scalar @_ ) {
+            when (1) { $message = shift; }
+            when (2) { ( $level, $message ) = @_; }
+            default {
+                die("Incorrect number of paremeters in function GesApl::App->log()\n"
+                );
+            }
         }
 
-        given($level)  {
-            when ('debug')  { $logger->debug($message); }
+        given ($level) {
+            when ('debug') { $logger->debug($message); }
             when ('info')  { $logger->info($message); }
             when ('warn')  { $logger->warn($message); }
-            when ('error')  { $logger->error($message); }
-            when ('fatal')  { $logger->fatal($message); }
+            when ('error') { $logger->error($message); }
+            when ('fatal') { $logger->fatal($message); }
         }
     }
     else {
@@ -207,8 +211,22 @@ sub log {
     }
 }
 
-# Same 
+# Sends a message to the log commands file
+# If only the message is passed then level info will be set as default
+# Returns 0 if no logger has been initiated
+sub log_command {
+    my $self = shift;
 
+    my $logger = $self->{_commands_logger};
+    if ($logger) {
+        my $message  = shift;
+        my $username = getpwuid($<);
+        $logger->info( sprintf( "%s (%s)", $message, $username ) );
+    }
+    else {
+        return 0;
+    }
+}
 
 1;
 
@@ -280,6 +298,10 @@ Admite 1 ó 4 parámetros:
 Escribe un mensaje en el log de la aplicación (configurado en /etc/gesapl/log4perl.cnf).
 El primer parámetro indica el nivel, una de las siguientes palabras clave: debug, info, warn, error, fatal. Este parámetro es opcional, si no se indica el nivel escogido será info
 El segundo parámetro es una cadena de texto a escribir en el log.
+
+=head3 log_command(mensaje)
+
+La aplicación mantiene un histórico de los comandos ejecutados, con este método almacenamos la cadena indicada en el log de comandos. En este cas no hay nivel de severidad ya que no se trata de errores
 
 =over
 

@@ -28,6 +28,9 @@ use constant DESCRIPTION =>
 # Start!
 my $gesapl = GesApl::App->new();
 
+# Save the command in history log
+$gesapl->log_command( "gesapl2 " . join( " ", @ARGV ) );
+
 # Parse script options
 my ( $help, $ms, @rs, $bs, $ls );
 
@@ -94,6 +97,7 @@ elsif ($bs) {
         "el servicio $bs no se ha podido eliminar del registro", 3 );
 
     &info_message("Configuración del servicio $bs eliminada\n");
+
     # Save command result in log
     $gesapl->log("Configuración del servicio $bs eliminada");
 
@@ -131,8 +135,10 @@ elsif (@rs) {
 
     &info_message(
         "Configuración del servicio " . $service_name . " añadida\n" );
+
     # Save command result in log
-    $gesapl->log("Configuración del servicio " . $service_name . " añadida");
+    $gesapl->log(
+        "Configuración del servicio " . $service_name . " añadida" );
 
 }
 
@@ -166,7 +172,8 @@ elsif ($ms) {
 
                 # Save monitor result in daemon log
                 $gesapl->log(
-                    sprintf("Monitorización del servicio %s: %s - WARNING: %s",
+                    sprintf(
+                        "Monitorización del servicio %s: %s - WARNING: %s",
                         $_->get_name(),
                         $_->get_monitor_status() ? "OK" : "KO",
                         $_->get_monitor_status_message()
@@ -183,7 +190,8 @@ elsif ($ms) {
 
                 # Save monitor result in daemon log
                 $gesapl->log(
-                    sprintf("Monitorización del servicio %s: %s",
+                    sprintf(
+                        "Monitorización del servicio %s: %s",
                         $_->get_name(),
                         $_->get_monitor_status() ? "OK" : "KO",
                     )
@@ -245,8 +253,11 @@ elsif ($ms) {
     }
     else {
         printf("\nNo hay servicios registrados en gesapl\n");
+
         # Save monitor result in daemon log
-        $gesapl->log("Monitorización no realizada: No hay servicios registrados en gesapl\n");
+        $gesapl->log(
+            "Monitorización no realizada: No hay servicios registrados en gesapl\n"
+        );
     }
 
 }
